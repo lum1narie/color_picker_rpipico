@@ -67,6 +67,7 @@ void draw_color_circle(LCD_ST7735S *LCD, LCD_POINT x_start, LCD_POINT y_start,
     for (uint j = 0; j < x_siz; ++j) {
       LCD_POINT x = x_start + j;
       size_t idx = i * x_siz + j;
+      LCD_COLOR c;
 
       float x_dif = (float)j - (float)outer_r;
       float y_dif = (float)outer_r - (float)i;
@@ -85,17 +86,12 @@ void draw_color_circle(LCD_ST7735S *LCD, LCD_POINT x_start, LCD_POINT y_start,
       int th_deg = 180 * th / pi;
       uint16_t h = 90 - th_deg + (th_deg > 90 ? 360 : 0);
 
-      img[idx] = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
+      c = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
+      img[idx] = c;
     }
   }
 
-  LCD->LCD_SetWindows(x_start, y_start, x_start + x_siz, y_start + y_siz);
-  gpio_put(PIN_DC, 1);
-  gpio_put(PIN_CS, 0);
-  for (size_t i = 0; i < x_siz * y_siz; ++i) {
-    uint8_t buf[2] = {(uint8_t)(img[i] >> 8), uint8_t(img[i] & 0xff)};
-    spi_write_blocking(spi0, buf, 2);
-  }
+  LCD->LCD_DrawImage(x_start, y_start, x_start + x_siz, y_start + y_siz, img);
 
   gpio_put(PIN_CS, 1);
 }
@@ -111,7 +107,7 @@ int main() {
 
   uint t = 0;
   while (true) {
-    draw_color_circle(&LCD, 20, 10, 50, 45, WHITE);
+    draw_color_circle(&LCD, 20, 10, 50, 45, 0x8410);
 
     sleep_ms(1500);
     // t = (t >= 17 ? 0 : t + 1);

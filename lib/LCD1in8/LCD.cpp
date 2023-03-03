@@ -73,6 +73,13 @@ void LCD_ST7735S::LCD_WriteData_8Bit(uint8_t Data) {
   Write_CS(1);
 }
 
+void LCD_ST7735S::LCD_WriteData_8BitArray(uint8_t *Data, size_t DataLen) {
+  Write_DC(1);
+  Write_CS(0);
+  spi_write_blocking(spi_port, Data, DataLen);
+  Write_CS(1);
+}
+
 void LCD_ST7735S::LCD_WriteData_16Bit(uint16_t Data) {
   uint8_t buf[2] = {(uint8_t)(Data >> 8), uint8_t(Data & 0xff)};
   Write_DC(1);
@@ -88,6 +95,16 @@ void LCD_ST7735S::LCD_WriteData_NLen16Bit(uint16_t Data, uint32_t DataLen) {
   Write_DC(1);
   Write_CS(0);
   for (i = 0; i < DataLen; i++) {
+    spi_write_blocking(spi_port, buf, 2);
+  }
+  Write_CS(1);
+}
+
+void LCD_ST7735S::LCD_WriteData_16BitArray(uint16_t *Data, size_t DataLen) {
+  Write_DC(1);
+  Write_CS(0);
+  for (size_t i = 0; i < DataLen; i++) {
+    uint8_t buf[2] = {(uint8_t)(Data[i] >> 8), uint8_t(Data[i] & 0xff)};
     spi_write_blocking(spi_port, buf, 2);
   }
   Write_CS(1);
@@ -589,6 +606,14 @@ void LCD_ST7735S::LCD_DrawCircle(LCD_POINT X_Center, LCD_POINT Y_Center,
       XCurrent++;
     }
   }
+}
+
+// TODO: DOC
+void LCD_ST7735S::LCD_DrawImage(LCD_POINT Xstart, LCD_POINT Ystart,
+                                LCD_POINT Xend, LCD_POINT Yend,
+                                LCD_COLOR *img) {
+  LCD_SetWindows(Xstart, Ystart, Xend, Yend);
+  LCD_WriteData_16BitArray(img, (Xend - Xstart) * (Yend - Ystart));
 }
 
 /********************************************************************************

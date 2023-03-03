@@ -2,8 +2,8 @@
 #define __LCD_H
 
 #include "fonts.h"
-#include "pico/stdlib.h"
 #include "hardware/spi.h"
+#include "pico/stdlib.h"
 
 #define LCD_COLOR uint16_t  // The variable type of the color
 #define LCD_POINT uint16_t  // The type of coordinate
@@ -137,19 +137,22 @@ class LCD_ST7735S {
   void Write_BL(bool Val);
   void LCD_WriteReg(uint8_t Reg);
   void LCD_WriteData_8Bit(uint8_t Data);
+  void LCD_WriteData_8BitArray(uint8_t *Data, size_t DataLen);
   void LCD_WriteData_16Bit(uint16_t Data);
   void LCD_WriteData_NLen16Bit(uint16_t Data, uint32_t DataLen);
+  void LCD_WriteData_16BitArray(uint16_t *Data, size_t DataLen);
   void LCD_InitReg(void);
   void LCD_SetGramScanWay(LCD_SCAN_DIR Scan_dir);
 
-  spi_inst_t* spi_port;
+  spi_inst_t *spi_port;
   uint pin_cs;
   uint pin_dc;
   uint pin_rst;
   uint pin_bl;
 
 public:
-  LCD_ST7735S(spi_inst_t *spi_port, uint pin_cs, uint pin_dc, uint pin_rst, uint pin_bl);
+  LCD_ST7735S(spi_inst_t *spi_port, uint pin_cs, uint pin_dc, uint pin_rst,
+              uint pin_bl);
   void LCD_Init(LCD_SCAN_DIR Lcd_ScanDir);
 
   // LCD set cursor + windows + color
@@ -174,6 +177,8 @@ public:
   void LCD_DrawCircle(LCD_POINT X_Center, LCD_POINT Y_Center, LCD_LENGTH Radius,
                       LCD_COLOR Color, DRAW_FILL Draw_Fill,
                       DOT_PIXEL Dot_Pixel);
+  void LCD_DrawImage(LCD_POINT Xstart, LCD_POINT Ystart, LCD_POINT Xend,
+                     LCD_POINT Yend, LCD_COLOR *img);
 
   // Display string
   void LCD_DisplayChar(LCD_POINT Xstart, LCD_POINT Ystart,
