@@ -12,7 +12,6 @@ lines, drawing, writing and other functions to achieve
 #include <stdio.h>
 #include <stdlib.h> //itoa()
 
-LCD_DIS sLCD_DIS;
 
 /**
  * @params spi_port spi port number to write

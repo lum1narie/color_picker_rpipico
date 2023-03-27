@@ -192,6 +192,7 @@ public:
                       sFONT *Font, LCD_COLOR Color_Background,
                       LCD_COLOR Color_Foreground);
   void LCD_Show(void);
+
+  LCD_DIS sLCD_DIS;
 };
-extern LCD_ST7735S LCD;
 #endif

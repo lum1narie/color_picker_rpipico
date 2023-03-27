@@ -56,8 +56,10 @@ void draw_color_circle(LCD_ST7735S *LCD, LCD_POINT x_start, LCD_POINT y_start,
     inner_r = outer_r >> 1;
   }
 
-  LCD_LENGTH x_siz = std::min(outer_r << 1, sLCD_DIS.LCD_Dis_Column - x_start);
-  LCD_LENGTH y_siz = std::min(outer_r << 1, sLCD_DIS.LCD_Dis_Page - y_start);
+  LCD_LENGTH x_siz =
+      std::min(outer_r << 1, LCD->sLCD_DIS.LCD_Dis_Column - x_start);
+  LCD_LENGTH y_siz =
+      std::min(outer_r << 1, LCD->sLCD_DIS.LCD_Dis_Page - y_start);
 
   LCD_COLOR img[x_siz * y_siz];
 
