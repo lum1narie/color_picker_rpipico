@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 3.13)
 
 add_library(LCD1in8 STATIC
   LCD.cpp
+  LCD_buffer.cpp
 )
 
 add_subdirectory(
