@@ -108,6 +108,19 @@ void LCD_ST7735S::LCD_WriteData_16BitArray(uint16_t *Data, size_t DataLen) {
   Write_CS(1);
 }
 
+void LCD_ST7735S::LCD_WriteData_16Bit2DArray(uint16_t **Data, size_t DataRowN,
+                                             size_t DataColN) {
+  Write_DC(1);
+  Write_CS(0);
+  for (size_t i = 0; i < DataRowN; i++) {
+    for (size_t j = 0; j < DataRowN; j++) {
+      uint8_t buf[2] = {(uint8_t)(Data[i][j] >> 8), uint8_t(Data[i][j] & 0xff)};
+      spi_write_blocking(spi_port, buf, 2);
+    }
+  }
+  Write_CS(1);
+}
+
 /*******************************************************************************
 function:
                 Common register initialization
@@ -609,9 +622,9 @@ void LCD_ST7735S::LCD_DrawCircle(LCD_POINT X_Center, LCD_POINT Y_Center,
 // TODO: DOC
 void LCD_ST7735S::LCD_DrawImage(LCD_POINT Xstart, LCD_POINT Ystart,
                                 LCD_POINT Xend, LCD_POINT Yend,
-                                LCD_COLOR *img) {
+                                LCD_COLOR **img) {
   LCD_SetWindows(Xstart, Ystart, Xend, Yend);
-  LCD_WriteData_16BitArray(img, (Xend - Xstart) * (Yend - Ystart));
+  LCD_WriteData_16Bit2DArray(img, Yend - Ystart, Xend - Xstart);
 }
 
 /********************************************************************************

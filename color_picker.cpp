@@ -63,20 +63,23 @@ void draw_color_circle(LCD_ST7735S *LCD, LCD_POINT x_start, LCD_POINT y_start,
   LCD_LENGTH y_siz =
       std::min(outer_r << 1, LCD->sLCD_DIS.LCD_Dis_Page - y_start);
 
-  LCD_COLOR img[x_siz * y_siz];
+  LCD_COLOR **img;
+  img = new LCD_COLOR *[y_siz];
+  for (uint i = 0; i < y_siz; ++i) {
+    img[i] = new LCD_COLOR[x_siz];
+  }
 
   for (uint i = 0; i < y_siz; ++i) {
     LCD_POINT y = y_start + i;
 
     for (uint j = 0; j < x_siz; ++j) {
       LCD_POINT x = x_start + j;
-      size_t idx = i * x_siz + j;
       LCD_COLOR c;
 
       float x_dif = (float)j - (float)outer_r;
       float y_dif = (float)outer_r - (float)i;
       if (x_dif == 0 && y_dif == 0) {
-        img[idx] = blank;
+        img[i][j] = blank;
         continue;
       }
 
@@ -84,20 +87,25 @@ void draw_color_circle(LCD_ST7735S *LCD, LCD_POINT x_start, LCD_POINT y_start,
       float th = atan2(y_dif, x_dif);
 
       if (r < inner_r || r > outer_r) {
-        img[idx] = blank;
+        img[i][j] = blank;
         continue;
       }
       int th_deg = 180 * th / pi;
       uint16_t h = 90 - th_deg + (th_deg > 90 ? 360 : 0);
 
       c = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
-      img[idx] = c;
+      img[i][j] = c;
     }
   }
 
   LCD->LCD_DrawImage(x_start, y_start, x_start + x_siz, y_start + y_siz, img);
 
   gpio_put(PIN_CS, 1);
+
+  for (uint i = 0; i < y_siz; ++i) {
+    delete[] img[i];
+  }
+  delete[] img;
 }
 
 int main() {
