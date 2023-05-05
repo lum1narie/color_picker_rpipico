@@ -142,6 +142,9 @@ protected:
   void LCD_WriteData_16Bit(uint16_t Data);
   void LCD_WriteData_NLen16Bit(uint16_t Data, uint32_t DataLen);
   void LCD_WriteData_16BitArray(uint16_t *Data, size_t DataLen);
+  void LCD_WriteData_16Bit2DArray(uint16_t **Data, size_t DataRowN,
+                                  size_t DataColN);
+
   void LCD_InitReg(void);
   void LCD_SetGramScanWay(LCD_SCAN_DIR Scan_dir);
 
@@ -181,7 +184,7 @@ public:
                       LCD_COLOR Color, DRAW_FILL Draw_Fill,
                       DOT_PIXEL Dot_Pixel);
   void LCD_DrawImage(LCD_POINT Xstart, LCD_POINT Ystart, LCD_POINT Xend,
-                     LCD_POINT Yend, LCD_COLOR *img);
+                     LCD_POINT Yend, LCD_COLOR **img);
 
   // Display string
   void LCD_DisplayChar(LCD_POINT Xstart, LCD_POINT Ystart,
