@@ -130,6 +130,7 @@ typedef enum {
                         Macro definition variable name
 ********************************************************************************/
 class LCD_ST7735S {
+protected:
   void LCD_Reset(void);
   void Write_CS(bool Val);
   void Write_DC(bool Val);
@@ -160,10 +161,12 @@ public:
                       LCD_POINT Yend);
   void LCD_SetCursor(LCD_POINT Xpoint, LCD_POINT Ypoint);
   void LCD_SetColor(LCD_COLOR Color, LCD_POINT Xpoint, LCD_POINT Ypoint);
-  void LCD_SetPointlColor(LCD_POINT Xpoint, LCD_POINT Ypoint, LCD_COLOR Color);
-  void LCD_SetArealColor(LCD_POINT Xstart, LCD_POINT Ystart, LCD_POINT Xend,
-                         LCD_POINT Yend, LCD_COLOR Color);
-  void LCD_Clear(LCD_COLOR Color);
+  virtual void LCD_SetPointlColor(LCD_POINT Xpoint, LCD_POINT Ypoint,
+                                  LCD_COLOR Color);
+  virtual void LCD_SetArealColor(LCD_POINT Xstart, LCD_POINT Ystart,
+                                 LCD_POINT Xend, LCD_POINT Yend,
+                                 LCD_COLOR Color);
+  virtual void LCD_Clear(LCD_COLOR Color);
 
   // Drawing
   void LCD_DrawPoint(LCD_POINT Xpoint, LCD_POINT Ypoint, LCD_COLOR Color,
@@ -191,7 +194,8 @@ public:
   void LCD_DisplayNum(LCD_POINT Xpoint, LCD_POINT Ypoint, int32_t Nummber,
                       sFONT *Font, LCD_COLOR Color_Background,
                       LCD_COLOR Color_Foreground);
-  void LCD_Show(void);
+  virtual void LCD_Show(void);
+
+  LCD_DIS sLCD_DIS;
 };
-extern LCD_ST7735S LCD;
 #endif
