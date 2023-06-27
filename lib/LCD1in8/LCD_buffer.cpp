@@ -39,11 +39,11 @@ void LCD_ST7735S_buffered::LCD_SetPointlColor(LCD_POINT Xpoint,
   if (Ypoint < buffer->y_start) {
     buffer->y_start = Ypoint;
   }
-  if (Xpoint > buffer->x_end) {
-    buffer->x_end = Xpoint;
+  if (Xpoint >= buffer->x_end) {
+    buffer->x_end = Xpoint + 1;
   }
-  if (Ypoint > buffer->y_end) {
-    buffer->y_end = Ypoint;
+  if (Ypoint >= buffer->y_end) {
+    buffer->y_end = Ypoint + 1;
   }
 }
 
