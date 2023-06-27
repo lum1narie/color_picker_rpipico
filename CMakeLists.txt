@@ -26,6 +26,7 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(color_picker color_picker.cpp )
+target_compile_options(color_picker PUBLIC -Wall -Wextra)
 target_sources(color_picker PRIVATE
   color.cpp)
 
