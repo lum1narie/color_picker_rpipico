@@ -1,6 +1,8 @@
 #include "color.hpp"
 #include "pico/stdlib.h"
 
+#include "LCD_buffer.hpp"
+
 namespace color {
 RGB::RGB() {}
 RGB::RGB(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
