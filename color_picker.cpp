@@ -241,9 +241,6 @@ calc_color_selector_geometry(LCD_ST7735S *LCD, int h, LCD_POINT x_start,
   retv.cursor_width = cursor_x_end - retv.cursor_x_start;
   retv.cursor_height = cursor_y_end - retv.cursor_y_start;
 
-  printf("cursor area: (%u, %u), (%u, %u)\n", retv.cursor_x_start,
-         retv.cursor_y_start, cursor_x_end, cursor_y_end); // DEBUG:
-
   return retv;
 }
 
@@ -285,27 +282,32 @@ void draw_color_selector(LCD_ST7735S_buffered *LCD, int h, LCD_POINT x_start,
                          LCD_LENGTH inner_r, LCD_LENGTH cursor_height,
                          LCD_LENGTH cursor_width, LCD_COLOR cursor_color,
                          LCD_COLOR bg_color) {
-  // erase old cursor
-  // draw_color_cursor(LCD, prev_geo.cursor_x_start, prev_geo.cursor_y_start,
-  //                   prev_geo.cursor_height, prev_geo.cursor_width,
-  //                   prev_geo.vertices, bg_color);
-  draw_color_cursor(LCD, prev_geo.cursor_x_start, prev_geo.cursor_y_start,
-                    prev_geo.cursor_height + 1, prev_geo.cursor_width + 1,
-                    prev_geo.vertices, bg_color);
-
   // calc cursor geometry
   Color_selector_geometry geo = calc_color_selector_geometry(
       LCD, h, x_start, y_start, outer_r, inner_r, cursor_height, cursor_width);
 
-  prev_geo = geo;
+  bool is_same_circle = (geo.circle_x_start == prev_geo.circle_x_start) &&
+                        (geo.circle_y_start == prev_geo.circle_y_start) &&
+                        (geo.circle_outer_r == prev_geo.circle_outer_r) &&
+                        (geo.circle_inner_r == prev_geo.circle_inner_r);
 
-  print_color_selector_geometry(&geo); // DEBUG:
+  // erase old cursor
+  draw_color_cursor(LCD, prev_geo.cursor_x_start, prev_geo.cursor_y_start,
+                    prev_geo.cursor_height + 1, prev_geo.cursor_width + 1,
+                    prev_geo.vertices, bg_color);
 
-  draw_color_circle(LCD, geo.circle_x_start, geo.circle_y_start,
-                    geo.circle_outer_r, geo.circle_inner_r);
+  if (is_same_circle) {
+    LCD->LCD_buffer_flush();
+  } else {
+    draw_color_circle(LCD, geo.circle_x_start, geo.circle_y_start,
+                      geo.circle_outer_r, geo.circle_inner_r);
+  }
+
   draw_color_cursor(LCD, geo.cursor_x_start, geo.cursor_y_start,
                     geo.cursor_height, geo.cursor_width, geo.vertices,
                     cursor_color);
+
+  prev_geo = geo;
 
   LCD->LCD_buffer_flush();
 }
@@ -323,9 +325,9 @@ int main() {
   int h = 0;
   while (true) {
     draw_color_selector(&LCD, h, 40, 30, 40, 30, 10, 4, WHITE, bg_color);
-    h += 30;
+    h += 2;
     h %= 360;
-    // sleep_ms(10);
+    sleep_ms(16);
   }
 
   return 0;
