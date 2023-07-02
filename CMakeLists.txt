@@ -28,7 +28,9 @@ pico_sdk_init()
 add_executable(color_picker color_picker.cpp )
 target_compile_options(color_picker PUBLIC -Wall -Wextra)
 target_sources(color_picker PRIVATE
-  color.cpp)
+  color.cpp
+  display.cpp
+)
 
 pico_set_program_name(color_picker "color_picker")
 pico_set_program_version(color_picker "0.1")
