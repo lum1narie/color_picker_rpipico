@@ -135,8 +135,9 @@ Color_selector_geometry calc_color_selector_geometry(
  * TODO: Fill Documentation
  */
 void draw_color_cursor(LCD_ST7735S_buffered *LCD, LCD_POINT x_start,
-                       LCD_POINT y_start, LCD_LENGTH area_height, LCD_LENGTH area_width,
-                       Float_2D *vertices, LCD_COLOR fg_color);
+                       LCD_POINT y_start, LCD_LENGTH area_height,
+                       LCD_LENGTH area_width, Float_2D *vertices,
+                       LCD_COLOR fg_color);
 
 extern Color_selector_geometry prev_geo;
 
