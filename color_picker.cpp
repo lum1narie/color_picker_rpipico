@@ -57,9 +57,13 @@ int main() {
   LCD_COLOR bg_color = BLACK;
 
   LCD.LCD_Clear(bg_color);
+
+  sleep_ms(2000);
+
   int h = 0;
   while (true) {
-    display::draw_color_selector(&LCD, h, 40, 30, 40, 30, 10, 4, WHITE, bg_color);
+    display::draw_color_selector(&LCD, h, 40, 30, 40, 30, 10, 4, WHITE,
+                                 bg_color);
     h += 2;
     h %= 360;
     sleep_ms(16);

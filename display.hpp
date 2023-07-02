@@ -4,11 +4,14 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 
 #include "LCD_buffer.hpp"
 #include "color.hpp"
 
 namespace display {
+#define DISPLAY_UNIT float
+
 struct LCD_Point_2D {
   LCD_POINT x;
   LCD_POINT y;
@@ -20,12 +23,17 @@ struct Float_2D {
 };
 
 /**
- * @brief draw color circle
- * TODO: Fill Documentation
+ * TODO: write documentation
  */
-void draw_color_circle(LCD_ST7735S_buffered *LCD, LCD_POINT x_start,
-                       LCD_POINT y_start, LCD_LENGTH outer_r,
-                       LCD_LENGTH inner_r);
+inline float crop(float x, float l, float r) {
+  if (x < l) {
+    return l;
+  } else if (x > r) {
+    return r;
+  } else {
+    return x;
+  }
+}
 
 /**
  * TODO: write documentation
@@ -48,7 +56,7 @@ inline float distance(float x0, float y0, float x1, float y1) {
 }
 
 inline float calc_sign(Float_2D p0, Float_2D p1, Float_2D p2) {
-  static float EPS = 1e-3;
+  static float REL_EPS = 1e-3;
   float d0 = distance(p0.x, p0.y, p1.x, p1.y);
   float d1 = distance(p0.x, p0.y, p2.x, p2.y);
 
@@ -56,7 +64,20 @@ inline float calc_sign(Float_2D p0, Float_2D p1, Float_2D p2) {
     return true;
   }
 
-  return cross_prod(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y) >= -EPS * d0 * d1;
+  return cross_prod(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y) >= -REL_EPS * d0 * d1;
+}
+
+inline bool float_eq(float x, float y) {
+  static float ABS_EPS = 1e-5;
+  static float REL_EPS = 1e-5;
+  float d = std::abs(x - y);
+  if (d < ABS_EPS) {
+    return true;
+  }
+
+  float m = std::max(std::min(std::abs(x), std::abs(y)),
+                     std::numeric_limits<float>::min());
+  return d / m < REL_EPS;
 }
 
 /**
@@ -71,33 +92,50 @@ inline bool is_in_triangle(Float_2D p, Float_2D *triangle) {
 }
 
 struct Color_selector_geometry {
-  LCD_POINT cursor_x_start;
-  LCD_POINT cursor_y_start;
-  LCD_LENGTH cursor_height;
-  LCD_LENGTH cursor_width;
+  LCD_POINT cursor_area_x_start;
+  LCD_POINT cursor_area_y_start;
+  LCD_LENGTH cursor_area_height;
+  LCD_LENGTH cursor_area_width;
 
-  Float_2D vertices[3];
+  Float_2D cursor_vertices[3];
 
-  LCD_POINT circle_x_start;
-  LCD_POINT circle_y_start;
-  LCD_POINT circle_outer_r;
-  LCD_POINT circle_inner_r;
+  LCD_POINT circle_area_x_start;
+  LCD_POINT circle_area_y_start;
+  LCD_LENGTH circle_area_height;
+  LCD_LENGTH circle_area_width;
+
+  Float_2D circle_center;
+  DISPLAY_UNIT circle_outer_r;
+  DISPLAY_UNIT circle_inner_r;
+
+  bool is_valid;
 };
 
 void print_color_selector_geometry(Color_selector_geometry *geo);
 
-Color_selector_geometry
-calc_color_selector_geometry(LCD_ST7735S *LCD, int h, LCD_POINT x_start,
-                             LCD_POINT y_start, LCD_LENGTH circle_outer_r,
-                             LCD_LENGTH circle_inner_r, LCD_LENGTH height,
-                             LCD_LENGTH width);
+/**
+ * @brief draw color circle
+ * TODO: Fill Documentation
+ */
+void draw_color_circle(LCD_ST7735S_buffered *LCD, Float_2D center,
+                       DISPLAY_UNIT outer_r, DISPLAY_UNIT inner_r,
+                       LCD_POINT x_start, LCD_POINT y_start,
+                       LCD_LENGTH area_height, LCD_LENGTH area_width);
+
+/**
+ * TODO: Fill Documentation
+ */
+Color_selector_geometry calc_color_selector_geometry(
+    LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
+    DISPLAY_UNIT circle_outer_r, DISPLAY_UNIT circle_inner_r,
+    DISPLAY_UNIT cursor_height, DISPLAY_UNIT cursor_width);
 
 /**
  * @brief draw cursor for color circle
  * TODO: Fill Documentation
  */
 void draw_color_cursor(LCD_ST7735S_buffered *LCD, LCD_POINT x_start,
-                       LCD_POINT y_start, LCD_LENGTH height, LCD_LENGTH width,
+                       LCD_POINT y_start, LCD_LENGTH area_height, LCD_LENGTH area_width,
                        Float_2D *vertices, LCD_COLOR fg_color);
 
 extern Color_selector_geometry prev_geo;
@@ -106,11 +144,10 @@ extern Color_selector_geometry prev_geo;
  * @brief draw color selector
  * TODO: Fill Documentation
  */
-void draw_color_selector(LCD_ST7735S_buffered *LCD, int h, LCD_POINT x_start,
-                         LCD_POINT y_start, LCD_LENGTH outer_r,
-                         LCD_LENGTH inner_r, LCD_LENGTH cursor_height,
-                         LCD_LENGTH cursor_width, LCD_COLOR cursor_color,
+void draw_color_selector(LCD_ST7735S_buffered *LCD, int h, DISPLAY_UNIT x_start,
+                         DISPLAY_UNIT y_start, DISPLAY_UNIT outer_r,
+                         DISPLAY_UNIT inner_r, DISPLAY_UNIT cursor_height,
+                         DISPLAY_UNIT cursor_width, LCD_COLOR cursor_color,
                          LCD_COLOR bg_color);
 } // namespace display
-// namespace display
 #endif
