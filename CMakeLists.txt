@@ -39,12 +39,14 @@ pico_enable_stdio_uart(color_picker 1)
 pico_enable_stdio_usb(color_picker 1)
 
 add_subdirectory(
-  ${CMAKE_CURRENT_LIST_DIR}/lib/LCD1in8
+  ${CMAKE_CURRENT_LIST_DIR}/LCD1in8
 )
 
 # Add the standard library to the build
 target_link_libraries(color_picker PRIVATE
   pico_stdlib
+  hardware_spi
+  pico_bootsel_via_double_reset
 )
 
 # Add the standard include files to the build
@@ -56,8 +58,6 @@ target_include_directories(color_picker PRIVATE
 # Add any user requested libraries
 target_link_libraries(color_picker PRIVATE
   LCD1in8
-  hardware_spi
-  pico_bootsel_via_double_reset
 )
 
 pico_add_extra_outputs(color_picker)
