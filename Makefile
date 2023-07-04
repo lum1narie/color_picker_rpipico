@@ -1,8 +1,16 @@
 BUILD_CONTAINER=rpi-pico-build
 
+BUILD_DIRECTORY=build
+TARGET=$(BUILD_DIRECTORY)/color_picker.uf2
+
+SOURCES := $(shell git ls-tree -r --name-only HEAD | grep -E '\.c(pp)?$$')
+HEADERS := $(shell git ls-tree -r --name-only HEAD | grep -E '\.h(pp)?$$')
+
 .PHONY: build clean
 
-build:
+build: $(TARGET)
+
+$(TARGET): $(SOURCES) $(HEADERS)
 	docker run --rm -t -v $(PWD):/target/$(notdir $(PWD)) $(BUILD_CONTAINER)
 	sed -i -e 's|/target/|$(dir $(realpath $(PWD)))|g' build/compile_commands.json
 	-rm -f compile_commands.json
