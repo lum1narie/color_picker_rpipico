@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(PICO_BOARD pico CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
-include(pico_sdk_import.cmake)
+include(${CMAKE_SOURCE_DIR}/pico_sdk_import.cmake)
 
 if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
   message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
@@ -25,10 +25,9 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(color_picker color_picker.cpp )
+add_executable(color_picker color_picker.cpp)
 target_compile_options(color_picker PUBLIC -Wall -Wextra)
 target_sources(color_picker PRIVATE
-  color.cpp
   display.cpp
 )
 
@@ -37,10 +36,6 @@ pico_set_program_version(color_picker "0.1")
 
 pico_enable_stdio_uart(color_picker 1)
 pico_enable_stdio_usb(color_picker 1)
-
-add_subdirectory(
-  ${CMAKE_CURRENT_LIST_DIR}/LCD1in8
-)
 
 # Add the standard library to the build
 target_link_libraries(color_picker PRIVATE
@@ -54,11 +49,13 @@ target_include_directories(color_picker PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/LCD1in8)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/color)
 
 # Add any user requested libraries
 target_link_libraries(color_picker PRIVATE
+  color
   LCD1in8
 )
 
 pico_add_extra_outputs(color_picker)
-

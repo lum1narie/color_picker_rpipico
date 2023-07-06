@@ -1,7 +1,4 @@
 #include "color.hpp"
-#include "pico/stdlib.h"
-
-#include "LCD_buffer.hpp"
 
 namespace color {
 RGB::RGB() {}

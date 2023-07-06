@@ -10,12 +10,21 @@ if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
   message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
 endif()
 
-project(LCD1in8 C CXX ASM)
+project(color C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-add_subdirectory(
-  ${CMAKE_CURRENT_LIST_DIR}/src
+add_library(color STATIC
+  color.cpp
 )
 
+target_compile_options(color PUBLIC -Wall -Wextra)
+
+target_include_directories(color_picker PRIVATE
+  ${PROJECT_SOURCE_DIR}
+)
+
+target_link_libraries(color PRIVATE
+  pico_stdlib
+)
