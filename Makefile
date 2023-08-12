@@ -3,8 +3,8 @@ BUILD_CONTAINER=rpi-pico-build
 BUILD_DIRECTORY=build
 TARGET=$(BUILD_DIRECTORY)/color_picker.uf2
 
-SOURCES := $(shell git ls-tree -r --name-only HEAD | grep -E '\.c(pp)?$$')
-HEADERS := $(shell git ls-tree -r --name-only HEAD | grep -E '\.h(pp)?$$')
+SOURCES := $(shell git ls-files -cmo --deduplicate --exclude-standard | grep -vx "$$(git ls-files -d)" | grep -E '\.c(pp)?$$')
+HEADERS := $(shell git ls-files -cmo --deduplicate --exclude-standard | grep -vx "$$(git ls-files -d)" | grep -E '\.h(pp)?$$')
 
 .PHONY: build clean
 
