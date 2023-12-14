@@ -21,9 +21,10 @@ add_library(color STATIC
 
 target_compile_options(color PUBLIC -Wall -Wextra)
 
-target_include_directories(color_picker PRIVATE
+target_include_directories(color PUBLIC
   ${PROJECT_SOURCE_DIR}
 )
+
 
 target_link_libraries(color PRIVATE
   pico_stdlib

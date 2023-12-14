@@ -27,6 +27,7 @@ pico_sdk_init()
 
 add_executable(color_picker color_picker.cpp)
 target_compile_options(color_picker PUBLIC -Wall -Wextra)
+
 target_sources(color_picker PRIVATE
   display.cpp
 )
@@ -49,9 +50,6 @@ target_include_directories(color_picker PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
 )
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/LCD1in8)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/color)
-
 # Add any user requested libraries
 target_link_libraries(color_picker PRIVATE
   color
@@ -59,3 +57,8 @@ target_link_libraries(color_picker PRIVATE
 )
 
 pico_add_extra_outputs(color_picker)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/LCD1in8)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/color)
+
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
