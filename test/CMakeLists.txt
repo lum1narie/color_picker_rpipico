@@ -7,7 +7,7 @@ project(color_picker_test C CXX ASM)
 pico_sdk_init()
 
 add_executable(cursor_test cursor_test.cpp)
-target_compile_options(cursor_test PUBLIC -Wall -Wextra)
+target_compile_options(cursor_test PUBLIC -Wall -Wextra -fdiagnostics-color=always)
 
 target_sources(cursor_test PRIVATE
   ${CMAKE_SOURCE_DIR}/display.cpp

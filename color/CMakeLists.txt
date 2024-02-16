@@ -19,7 +19,7 @@ add_library(color STATIC
   color.cpp
 )
 
-target_compile_options(color PUBLIC -Wall -Wextra)
+target_compile_options(color PUBLIC -Wall -Wextra -fdiagnostics-color=always)
 
 target_include_directories(color PUBLIC
   ${PROJECT_SOURCE_DIR}

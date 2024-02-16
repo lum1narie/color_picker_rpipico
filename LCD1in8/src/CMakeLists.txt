@@ -8,7 +8,7 @@ add_library(LCD1in8 STATIC
   LCD_buffer.cpp
 )
 
-target_compile_options(LCD1in8 PUBLIC -Wall -Wextra)
+target_compile_options(LCD1in8 PUBLIC -Wall -Wextra -fdiagnostics-color=always)
 
 add_subdirectory(
   ${CMAKE_CURRENT_LIST_DIR}/Fonts
