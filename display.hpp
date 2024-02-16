@@ -79,23 +79,23 @@ inline bool is_in_triangle(Float_2D p, Float_2D *triangle) {
 }
 
 struct Color_selector_geometry {
-  LCD_POINT cursor_area_x_start;
-  LCD_POINT cursor_area_y_start;
-  LCD_LENGTH cursor_area_height;
-  LCD_LENGTH cursor_area_width;
+  LCD_POINT cursor_area_x_start = 0;
+  LCD_POINT cursor_area_y_start = 0;
+  LCD_LENGTH cursor_area_height = 0;
+  LCD_LENGTH cursor_area_width = 0;
 
-  Float_2D cursor_vertices[3];
+  Float_2D cursor_vertices[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
 
-  LCD_POINT circle_area_x_start;
-  LCD_POINT circle_area_y_start;
-  LCD_LENGTH circle_area_height;
-  LCD_LENGTH circle_area_width;
+  LCD_POINT circle_area_x_start = 0;
+  LCD_POINT circle_area_y_start = 0;
+  LCD_LENGTH circle_area_height = 0;
+  LCD_LENGTH circle_area_width = 0;
 
-  Float_2D circle_center;
-  DISPLAY_UNIT circle_outer_r;
-  DISPLAY_UNIT circle_inner_r;
+  Float_2D circle_center = {0.0, 0.0};
+  DISPLAY_UNIT circle_outer_r = 0;
+  DISPLAY_UNIT circle_inner_r = 0;
 
-  bool is_valid;
+  bool is_valid = false;
 };
 
 void print_color_selector_geometry(Color_selector_geometry *geo);

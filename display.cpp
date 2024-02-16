@@ -191,10 +191,7 @@ void draw_color_cursor(LCD_ST7735S_buffered *LCD, LCD_POINT x_start,
   }
 }
 
-Color_selector_geometry prev_geo = {
-    0,   0,   0,    0, {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}},
-    0,   0,   0,    0, {0.0, 0.0},
-    0.0, 0.0, false};
+Color_selector_geometry prev_geo;
 
 /**
  * @brief draw color selector
