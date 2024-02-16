@@ -117,26 +117,26 @@ Color_selector_geometry calc_color_selector_geometry(
                               v2_y_init_from_center * cos_th;
 
   retv.cursor_area_x_start = std::floor(
-      crop(std::min({retv.cursor_vertices[0].x, retv.cursor_vertices[1].x,
-                     retv.cursor_vertices[2].x}),
-           0, (float)LCD->sLCD_DIS.LCD_Dis_Column) +
+      std::clamp(std::min({retv.cursor_vertices[0].x, retv.cursor_vertices[1].x,
+                           retv.cursor_vertices[2].x}),
+                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column) +
       ROUND_EPS);
   retv.cursor_area_y_start = std::floor(
-      crop(std::min({retv.cursor_vertices[0].y, retv.cursor_vertices[1].y,
-                     retv.cursor_vertices[2].y}),
-           0, (float)LCD->sLCD_DIS.LCD_Dis_Page) +
+      std::clamp(std::min({retv.cursor_vertices[0].y, retv.cursor_vertices[1].y,
+                           retv.cursor_vertices[2].y}),
+                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Page) +
       ROUND_EPS);
   LCD_POINT cursor_x_end = std::ceil(
-      crop(std::max({retv.cursor_vertices[0].x, retv.cursor_vertices[1].x,
-                     retv.cursor_vertices[2].x}) +
-               1,
-           0, (float)LCD->sLCD_DIS.LCD_Dis_Column) -
+      std::clamp(std::max({retv.cursor_vertices[0].x, retv.cursor_vertices[1].x,
+                           retv.cursor_vertices[2].x}) +
+                     1.0f,
+                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column) -
       ROUND_EPS);
   LCD_POINT cursor_y_end = std::ceil(
-      crop(std::max({retv.cursor_vertices[0].y, retv.cursor_vertices[1].y,
-                     retv.cursor_vertices[2].y}) +
-               1,
-           0, (float)LCD->sLCD_DIS.LCD_Dis_Page) -
+      std::clamp(std::max({retv.cursor_vertices[0].y, retv.cursor_vertices[1].y,
+                           retv.cursor_vertices[2].y}) +
+                     1.0f,
+                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Page) -
       ROUND_EPS);
 
   retv.cursor_area_width = cursor_x_end - retv.cursor_area_x_start;
@@ -145,16 +145,18 @@ Color_selector_geometry calc_color_selector_geometry(
   retv.circle_inner_r = circle_inner_r;
   retv.circle_outer_r = circle_outer_r;
   retv.circle_area_x_start =
-      crop(x_start, 0, (float)LCD->sLCD_DIS.LCD_Dis_Column);
+      std::clamp(x_start, 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column);
   retv.circle_area_y_start =
-      crop(y_start, 0, (float)LCD->sLCD_DIS.LCD_Dis_Column);
+      std::clamp(y_start, 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column);
 
-  LCD_POINT circle_x_end = std::ceil(crop(x_start + circle_outer_r * 2 + 1, 0,
-                                          (float)LCD->sLCD_DIS.LCD_Dis_Column) -
-                                     ROUND_EPS);
-  LCD_POINT circle_y_end = std::ceil(crop(y_start + circle_outer_r * 2 + 1, 0,
-                                          (float)LCD->sLCD_DIS.LCD_Dis_Page) -
-                                     ROUND_EPS);
+  LCD_POINT circle_x_end =
+      std::ceil(std::clamp(x_start + circle_outer_r * 2.0f + 1.0f, 0.0f,
+                           (float)LCD->sLCD_DIS.LCD_Dis_Column) -
+                ROUND_EPS);
+  LCD_POINT circle_y_end =
+      std::ceil(std::clamp(y_start + circle_outer_r * 2.0f + 1.0f, 0.0f,
+                           (float)LCD->sLCD_DIS.LCD_Dis_Page) -
+                ROUND_EPS);
 
   retv.circle_area_width = circle_x_end - retv.circle_area_x_start;
   retv.circle_area_height = circle_y_end - retv.circle_area_y_start;

@@ -25,19 +25,6 @@ struct Float_2D {
 /**
  * TODO: write documentation
  */
-inline float crop(float x, float l, float r) {
-  if (x < l) {
-    return l;
-  } else if (x > r) {
-    return r;
-  } else {
-    return x;
-  }
-}
-
-/**
- * TODO: write documentation
- */
 inline float cross_prod(float x0, float y0, float x1, float y1, float x2,
                         float y2) {
   return (x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0);
