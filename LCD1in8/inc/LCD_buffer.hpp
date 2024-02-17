@@ -8,22 +8,22 @@
 #define BUFFER_MAXPIXEL LCD_Y_MAXPIXEL
 
 #define LCD_POINT_INF 0xFFFF
-struct LCD_buffer {
+struct LCDBuffer {
   LCD_COLOR buffer[BUFFER_MAXPIXEL][BUFFER_MAXPIXEL];
   LCD_POINT x_start;
   LCD_POINT y_start;
   LCD_POINT x_end;
   LCD_POINT y_end;
 
-  LCD_buffer();
+  LCDBuffer();
 };
 
-class LCD_ST7735S_buffered : public LCD_ST7735S {
+class LCD_ST7735SBuffered : public LCD_ST7735S {
 protected:
   void LCD_buffer_init();
 
 public:
-  LCD_ST7735S_buffered(spi_inst_t *spi_port, uint pin_cs, uint pin_dc,
+  LCD_ST7735SBuffered(spi_inst_t *spi_port, uint pin_cs, uint pin_dc,
                        uint pin_rst, uint pin_bl);
 
   void LCD_SetPointlColor(LCD_POINT Xpoint, LCD_POINT Ypoint,
