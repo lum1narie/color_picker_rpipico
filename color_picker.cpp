@@ -60,10 +60,15 @@ int main() {
 
   sleep_ms(2000);
 
+  display::ColorSelectorDrawer cs_drawer;
+  cs_drawer.set_bg_color(bg_color);
+  cs_drawer.set_lcd(&LCD);
+  cs_drawer.set_circle_params({40, 30, 40, 30});
+  cs_drawer.set_cursor_params({10, 4, WHITE});
+
   int h = 0;
   while (true) {
-    display::draw_color_selector(&LCD, h, 40, 30, 40, 30, 10, 4, WHITE,
-                                 bg_color);
+    cs_drawer.draw_color_selector(h);
     h += 2;
     h %= 360;
     sleep_ms(16);
