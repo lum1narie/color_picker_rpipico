@@ -35,7 +35,7 @@ inline void setup_spi() {
 }
 
 // LCD_ST7735S LCD(SPI_PORT, PIN_CS, PIN_DC, PIN_RST, PIN_BL);
-LCD_ST7735S_buffered LCD(SPI_PORT, PIN_CS, PIN_DC, PIN_RST, PIN_BL);
+LCD_ST7735SBuffered LCD(SPI_PORT, PIN_CS, PIN_DC, PIN_RST, PIN_BL);
 void LCD_Init() {
   gpio_init(PIN_DC);
   gpio_set_dir(PIN_DC, GPIO_OUT);

@@ -153,7 +153,7 @@ protected:
   ColorSelectorGeometry prev_geo;
   ColorCircleParams circle_params;
   ColorCursorParams cursor_params;
-  LCD_ST7735S_buffered *LCD;
+  LCD_ST7735SBuffered *LCD;
   LCD_COLOR bg_color = BLACK;
 
   /**
@@ -164,7 +164,7 @@ protected:
    * @param[in] outer_r: radius of outer color circle
    * @param[in] inner_r: radius of inner void circle
    */
-  void draw_color_circle(LCD_ST7735S_buffered *LCD,
+  void draw_color_circle(LCD_ST7735SBuffered *LCD,
                          ColorCircleGeometry circle) const;
 
   /**
@@ -179,7 +179,7 @@ protected:
    * @brief draw cursor for color circle
    * TODO: Fill Documentation
    */
-  void draw_color_cursor(LCD_ST7735S_buffered *LCD,
+  void draw_color_cursor(LCD_ST7735SBuffered *LCD,
                          ColorCursorGeometry cursor,
                          LCD_COLOR fg_color) const;
 
@@ -188,7 +188,7 @@ public:
   void set_circle_params(ColorCircleParams params);
   void set_cursor_params(ColorCursorParams params);
   void set_bg_color(LCD_COLOR bg_color);
-  void set_lcd(LCD_ST7735S_buffered *LCD);
+  void set_lcd(LCD_ST7735SBuffered *LCD);
 
   /**
    * @brief draw color selector

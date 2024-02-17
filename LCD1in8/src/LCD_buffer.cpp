@@ -2,29 +2,29 @@
 #include <algorithm>
 #include <cstdio>
 
-static LCD_buffer *buffer;
+static LCDBuffer *buffer;
 
-LCD_buffer::LCD_buffer() {
+LCDBuffer::LCDBuffer() {
   x_start = LCD_POINT_INF;
   x_end = 0;
   y_start = LCD_POINT_INF;
   y_end = 0;
 }
 
-void LCD_ST7735S_buffered::LCD_buffer_init() {
+void LCD_ST7735SBuffered::LCD_buffer_init() {
   if (buffer == NULL) {
-    buffer = new LCD_buffer();
+    buffer = new LCDBuffer();
   }
 }
 
-LCD_ST7735S_buffered::LCD_ST7735S_buffered(spi_inst_t *spi_port, uint pin_cs,
+LCD_ST7735SBuffered::LCD_ST7735SBuffered(spi_inst_t *spi_port, uint pin_cs,
                                            uint pin_dc, uint pin_rst,
                                            uint pin_bl)
     : LCD_ST7735S(spi_port, pin_cs, pin_dc, pin_rst, pin_bl) {
   LCD_buffer_init();
 }
 
-void LCD_ST7735S_buffered::LCD_SetPointlColor(LCD_POINT Xpoint,
+void LCD_ST7735SBuffered::LCD_SetPointlColor(LCD_POINT Xpoint,
                                               LCD_POINT Ypoint,
                                               LCD_COLOR Color) {
 
@@ -47,7 +47,7 @@ void LCD_ST7735S_buffered::LCD_SetPointlColor(LCD_POINT Xpoint,
   }
 }
 
-void LCD_ST7735S_buffered::LCD_SetArealColor(LCD_POINT Xstart, LCD_POINT Ystart,
+void LCD_ST7735SBuffered::LCD_SetArealColor(LCD_POINT Xstart, LCD_POINT Ystart,
                                              LCD_POINT Xend, LCD_POINT Yend,
                                              LCD_COLOR Color) {
 
@@ -75,7 +75,7 @@ void LCD_ST7735S_buffered::LCD_SetArealColor(LCD_POINT Xstart, LCD_POINT Ystart,
   }
 }
 
-void LCD_ST7735S_buffered::LCD_Clear(LCD_COLOR Color) {
+void LCD_ST7735SBuffered::LCD_Clear(LCD_COLOR Color) {
   LCD_ST7735S::LCD_Clear(Color);
   LCD_buffer_flush();
 
@@ -85,12 +85,12 @@ void LCD_ST7735S_buffered::LCD_Clear(LCD_COLOR Color) {
   buffer->y_end = 0;
 }
 
-void LCD_ST7735S_buffered::LCD_Show(void) {
+void LCD_ST7735SBuffered::LCD_Show(void) {
   LCD_ST7735S::LCD_Show();
   LCD_buffer_flush();
 }
 
-void LCD_ST7735S_buffered::LCD_buffer_flush() {
+void LCD_ST7735SBuffered::LCD_buffer_flush() {
   LCD_SetWindows(buffer->x_start, buffer->y_start, buffer->x_end,
                  buffer->y_end);
 

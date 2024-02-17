@@ -40,12 +40,12 @@ void ColorSelectorDrawer::set_bg_color(LCD_COLOR bg_color) {
   this->bg_color = bg_color;
 }
 
-void ColorSelectorDrawer::set_lcd(LCD_ST7735S_buffered *LCD) {
+void ColorSelectorDrawer::set_lcd(LCD_ST7735SBuffered *LCD) {
   this->LCD = LCD;
 }
 
 void ColorSelectorDrawer::draw_color_circle(
-    LCD_ST7735S_buffered *LCD, ColorCircleGeometry circle) const {
+    LCD_ST7735SBuffered *LCD, ColorCircleGeometry circle) const {
   // set inner_r as half as outer_r if invalid value is given
   if (circle.inner_r >= circle.outer_r) {
     circle.inner_r = circle.outer_r * 0.75;
@@ -185,7 +185,7 @@ ColorSelectorGeometry ColorSelectorDrawer::calc_color_selector_geometry(
   return retv;
 }
 
-void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735S_buffered *LCD,
+void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered *LCD,
                                               ColorCursorGeometry cursor,
                                               LCD_COLOR fg_color) const {
   LCD_LENGTH x_siz =
