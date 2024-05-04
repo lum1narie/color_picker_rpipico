@@ -24,9 +24,7 @@ void print_color_selector_geometry(ColorSelectorGeometry *geo) {
          geo->circle.center.y, geo->circle.outer_r, geo->circle.inner_r);
 }
 
-ColorSelectorDrawer::ColorSelectorDrawer() {
-  this->prev_geo.is_valid = false;
-}
+ColorSelectorDrawer::ColorSelectorDrawer() { this->prev_geo.is_valid = false; }
 
 void ColorSelectorDrawer::set_circle_params(ColorCircleParams params) {
   this->circle_params = params;
@@ -40,12 +38,10 @@ void ColorSelectorDrawer::set_bg_color(LCD_COLOR bg_color) {
   this->bg_color = bg_color;
 }
 
-void ColorSelectorDrawer::set_lcd(LCD_ST7735SBuffered *LCD) {
-  this->LCD = LCD;
-}
+void ColorSelectorDrawer::set_lcd(LCD_ST7735SBuffered *LCD) { this->LCD = LCD; }
 
-void ColorSelectorDrawer::draw_color_circle(
-    LCD_ST7735SBuffered *LCD, ColorCircleGeometry circle) const {
+void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered *LCD,
+                                            ColorCircleGeometry circle) const {
   // set inner_r as half as outer_r if invalid value is given
   if (circle.inner_r >= circle.outer_r) {
     circle.inner_r = circle.outer_r * 0.75;
@@ -186,8 +182,8 @@ ColorSelectorGeometry ColorSelectorDrawer::calc_color_selector_geometry(
 }
 
 void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered *LCD,
-                                              ColorCursorGeometry cursor,
-                                              LCD_COLOR fg_color) const {
+                                            ColorCursorGeometry cursor,
+                                            LCD_COLOR fg_color) const {
   LCD_LENGTH x_siz =
       std::min(cursor.area_width, (LCD_LENGTH)(LCD->sLCD_DIS.LCD_Dis_Column -
                                                cursor.area_x_start));

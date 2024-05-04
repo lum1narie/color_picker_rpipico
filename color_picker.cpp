@@ -7,8 +7,6 @@
 #include "display.hpp"
 
 // SPI Defines
-// We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for
 // information on GPIO assignments
 #define SPI_PORT spi0
 #define PIN_MISO 16
@@ -23,9 +21,12 @@
 #define SCAN_DIR D2U_L2R // rot CCW 90 degree
 #define BG_COLOR WHITE
 
-inline void setup_spi() {
-  // SPI initialisation. This example will use SPI at 1MHz.
-  spi_init(SPI_PORT, 25 * 1000 * 1000);
+/**
+ * @brief setup SPI connection
+ * @param[in] baudrate: baud rate for SPI (Hz)
+ */
+inline void setup_spi(uint baud_rate) {
+  spi_init(SPI_PORT, baud_rate);
   gpio_set_function(PIN_MISO, GPIO_FUNC_SPI);
   gpio_set_function(PIN_CS, GPIO_FUNC_SIO);
   gpio_set_function(PIN_SCK, GPIO_FUNC_SPI);
@@ -36,7 +37,11 @@ inline void setup_spi() {
 
 // LCD_ST7735S LCD(SPI_PORT, PIN_CS, PIN_DC, PIN_RST, PIN_BL);
 LCD_ST7735SBuffered LCD(SPI_PORT, PIN_CS, PIN_DC, PIN_RST, PIN_BL);
-void LCD_Init() {
+/**
+ * @brief setup GPIO and config for LCD
+ * @param[in] scan_dir: direction of LCD
+ */
+void LCD_init(LCD_SCAN_DIR scan_dir) {
   gpio_init(PIN_DC);
   gpio_set_dir(PIN_DC, GPIO_OUT);
   gpio_init(PIN_RST);
@@ -44,15 +49,15 @@ void LCD_Init() {
   gpio_init(PIN_BL);
   gpio_set_dir(PIN_BL, GPIO_OUT);
 
-  LCD.LCD_Init(SCAN_DIR);
+  LCD.LCD_Init(scan_dir);
 }
 
 int main() {
   stdio_init_all();
 
-  setup_spi();
+  setup_spi(25 * 1000 * 1000);
 
-  LCD_Init();
+  LCD_init(SCAN_DIR);
 
   LCD_COLOR bg_color = BLACK;
 

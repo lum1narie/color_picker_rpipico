@@ -106,69 +106,123 @@ inline bool is_in_triangle(Float2D p, Float2D *triangle) {
   return (sign_1 == sign_2) && (sign_1 == sign_3);
 }
 
+/**
+ * @brief geometry of color circle
+ */
 struct ColorCircleGeometry {
+  //! x coordinate of left-up-most point
   LCD_POINT area_x_start = 0;
+  //! y coordinate of left-up-most point
   LCD_POINT area_y_start = 0;
+  //! height of area
   LCD_LENGTH area_height = 0;
+  //! width of area
   LCD_LENGTH area_width = 0;
 
+  //! center of circle
   Float2D center = {0.0, 0.0};
+  //! radius of outer colored circle
   DISPLAY_UNIT outer_r = 0;
+  //! radius of inner void circle
   DISPLAY_UNIT inner_r = 0;
 };
 
+/**
+ * @brief geometry of cursor in color selector
+ */
 struct ColorCursorGeometry {
+  //! x coordinate of left-up-most point
   LCD_POINT area_x_start = 0;
+  //! y coordinate of left-up-most point
   LCD_POINT area_y_start = 0;
+  //! height of area
   LCD_LENGTH area_height = 0;
+  //! width of area
   LCD_LENGTH area_width = 0;
 
+  //! coordinates of vertices of cursor
   Float2D vertices[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
 };
 
+/**
+ * @brief geometry of color selector
+ */
 struct ColorSelectorGeometry {
+  //! geometry of color circle
   ColorCircleGeometry circle;
+  //! geometry of cursor
   ColorCursorGeometry cursor;
 
+  //! true if color selector is valid
   bool is_valid = false;
 };
 
+/**
+ * @brief print ColorSelectorGeometry for debug
+ * @param[in] geo ColorSelectorGeometry to print
+ */
 void print_color_selector_geometry(ColorSelectorGeometry *geo);
 
+/**
+ * @brief parameters of color circle
+ */
 struct ColorCircleParams {
+  //! x coordinate of left-up-most point
   LCD_POINT area_x_start;
+  //! y coordinate of left-up-most point
   LCD_POINT area_y_start;
 
+  //! radius of outer colored circle
   DISPLAY_UNIT outer_r;
+  //! radius of inner void circle
   DISPLAY_UNIT inner_r;
 };
+
+/**
+ * @brief parameters of cursor
+ */
 struct ColorCursorParams {
+  //! height of cursor
   DISPLAY_UNIT height;
+  //! bottom length of cursor
   DISPLAY_UNIT width;
+  //! foreground color of cursor
   LCD_COLOR color;
 };
 
+/**
+ * @brief drawer of color selector
+ */
 class ColorSelectorDrawer {
 protected:
+  //! geometry on previous draw
   ColorSelectorGeometry prev_geo;
   ColorCircleParams circle_params;
   ColorCursorParams cursor_params;
+  //! LCD object to draw on
   LCD_ST7735SBuffered *LCD;
+  //! background color
   LCD_COLOR bg_color = BLACK;
 
   /**
-   * TODO: Fill Documentation
    * @brief draw color circle
    * @param[in] LCD: LCD object
-   * @param[in] center: center coordinate of color circle
-   * @param[in] outer_r: radius of outer color circle
-   * @param[in] inner_r: radius of inner void circle
+   * @param[in] circle: geometry of color circle
    */
   void draw_color_circle(LCD_ST7735SBuffered *LCD,
                          ColorCircleGeometry circle) const;
 
   /**
-   * TODO: Fill Documentation
+   * @brief calculate geometry of color selector
+   * @param[out] LCD: LCD object
+   * @param[in] h: hue of color
+   * @param[in] x_start: x coordinate of left-up-most point
+   * @param[in] y_start: y coordinate of left-up-most point
+   * @param[in] circle_outer_r: radius of outer colored circle
+   * @param[in] circle_inner_r: radius of inner void circle
+   * @param[in] cursor_height: height of cursor
+   * @param[in] cursor_width: bottom length of cursor
+   * @return ColorSelectorGeometry: geometry of color selector
    */
   ColorSelectorGeometry calc_color_selector_geometry(
       LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
@@ -177,22 +231,39 @@ protected:
 
   /**
    * @brief draw cursor for color circle
-   * TODO: Fill Documentation
+   * @param[out] LCD: LCD object
+   * @param[in] cursor: geometry of cursor
+   * @param[in] fg_color: foreground color
    */
-  void draw_color_cursor(LCD_ST7735SBuffered *LCD,
-                         ColorCursorGeometry cursor,
+  void draw_color_cursor(LCD_ST7735SBuffered *LCD, ColorCursorGeometry cursor,
                          LCD_COLOR fg_color) const;
 
 public:
   ColorSelectorDrawer();
+  /**
+   * @brief set parameters for circle
+   * @param[in] params: parameters of circle
+   */
   void set_circle_params(ColorCircleParams params);
+  /**
+   * @brief set parameters for cursor
+   * @param[in] params: parameters of cursor
+   */
   void set_cursor_params(ColorCursorParams params);
+  /**
+   * @brief set background color
+   * @param[in] bg_color: background color
+   */
   void set_bg_color(LCD_COLOR bg_color);
+  /**
+   * @brief set LCD object
+   * @param[in] LCD: LCD object
+   */
   void set_lcd(LCD_ST7735SBuffered *LCD);
 
   /**
    * @brief draw color selector
-   * TODO: Fill Documentation
+   * @param[in] h: hue of color
    */
   void draw_color_selector(int h);
 };
