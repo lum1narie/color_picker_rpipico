@@ -5,6 +5,8 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 # set(PICO_SDK_PATH "/home/lum1narie/Development/pico/pico-sdk")
@@ -20,45 +22,33 @@ endif()
 
 project(color_picker C CXX ASM)
 
-# Initialise the Raspberry Pi Pico SDK
-pico_sdk_init()
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src)
 
-# Add executable. Default name is the project name, version 0.1
+FIND_PACKAGE(Doxygen
+  REQUIRED dot
+  OPTIONAL_COMPONENTS mscgen dia)
+IF(DOXYGEN_FOUND)
+  SET(DOXYGEN_TARGET "doc")
+  SET(DOXYGEN_CONF_FILE "doxygen.conf")
 
-add_executable(color_picker color_picker.cpp)
-target_compile_options(color_picker PUBLIC -Wall -Wextra -fdiagnostics-color=always)
+  SET(DOXYGEN_PROJECT_NAME ${PROEJCT_NAME})
+  SET(DOXYGEN_PROJECT_NUMBER ${PROEJCT_NUMBER})
+  SET(DOXYGEN_RECURSIVE yes)
+  SET(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/doc)
+  SET(DOXYGEN_EXTRACT_ALL YES)
+  SET(DOXYGEN_EXTRACT_PRIVATE YES)
+  SET(DOXYGEN_EXTRACT_STATIC YES)
+  SET(DOXYGEN_EXTRACT_RECURSIVE YES)
+  SET(DOXYGEN_UML_LOOK YES)
+  SET(DOXYGEN_CALL_GRAPH YES)
+  SET(DOXYGEN_CALLER_GRAPH YES)
 
-target_sources(color_picker PRIVATE
-  display.cpp
-)
-
-pico_set_program_name(color_picker "color_picker")
-pico_set_program_version(color_picker "0.1")
-
-pico_enable_stdio_uart(color_picker 1)
-pico_enable_stdio_usb(color_picker 1)
-
-# Add the standard library to the build
-target_link_libraries(color_picker PRIVATE
-  pico_stdlib
-  hardware_spi
-  pico_bootsel_via_double_reset
-)
-
-# Add the standard include files to the build
-target_include_directories(color_picker PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}
-)
-
-# Add any user requested libraries
-target_link_libraries(color_picker PRIVATE
-  color
-  LCD1in8
-)
-
-pico_add_extra_outputs(color_picker)
-
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/LCD1in8)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/color)
+  DOXYGEN_ADD_DOCS(${DOXYGEN_TARGET}
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/inc
+  )
+ELSE(DOXYGEN_FOUND)
+  MESSAGE (WARNING "doxygen is NOT found")
+ENDIF(DOXYGEN_FOUND)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)

@@ -6,12 +6,14 @@ BUILD_DIRECTORY=build
 # SOURCES := $(shell git ls-files -cmo --deduplicate --exclude-standard | grep -vx "$$(git ls-files -d)" | grep -E '\.c(pp)?$$')
 # HEADERS := $(shell git ls-files -cmo --deduplicate --exclude-standard | grep -vx "$$(git ls-files -d)" | grep -E '\.h(pp)?$$')
 
-.PHONY: build fmt clean
+.PHONY: build dc fmt clean
 
 build:
 	docker run --rm -t -v $(PWD):/target/$(notdir $(PWD)) $(BUILD_CONTAINER)
 	make compile_commands.json
 
+doc:
+	docker run --rm -t -v $(PWD):/target/$(notdir $(PWD)) $(BUILD_CONTAINER) doc
 .PHONY: compile_commands.json
 compile_commands.json:
 	sed -i -e 's|/target/|$(dir $(realpath $(PWD)))|g' build/compile_commands.json
