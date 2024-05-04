@@ -10,7 +10,3 @@ target_sources(LCD1in8 PRIVATE
   font20.c
   font24.c
 )
-
-target_include_directories(LCD1in8 PRIVATE
-  ${PROJECT_SOURCE_DIR}/inc
-)
