@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdio>
 #include <limits>
+#include <optional>
 
 #include "LCD_buffer.hpp"
 #include "color.hpp"
@@ -125,6 +126,9 @@ struct ColorCircleGeometry {
   DISPLAY_UNIT outer_r = 0;
   //! radius of inner void circle
   DISPLAY_UNIT inner_r = 0;
+
+
+  bool operator==(const ColorCircleGeometry& rhs) const;
 };
 
 /**
@@ -152,9 +156,6 @@ struct ColorSelectorGeometry {
   ColorCircleGeometry circle;
   //! geometry of cursor
   ColorCursorGeometry cursor;
-
-  //! true if color selector is valid
-  bool is_valid = false;
 };
 
 /**
@@ -196,21 +197,21 @@ struct ColorCursorParams {
 class ColorSelectorDrawer {
 protected:
   //! geometry on previous draw
-  ColorSelectorGeometry prev_geo;
+  std::optional<ColorSelectorGeometry> prev_geo = std::nullopt;
   ColorCircleParams circle_params;
   ColorCursorParams cursor_params;
   //! LCD object to draw on
-  LCD_ST7735SBuffered *LCD;
+  LCD_ST7735SBuffered &lcd;
   //! background color
   LCD_COLOR bg_color = BLACK;
-  LCD_COLOR prev_bg_color = BLACK;
+  std::optional<LCD_COLOR> prev_bg_color = std::nullopt;
 
   /**
    * @brief draw color circle
    * @param[in] LCD: LCD object
    * @param[in] circle: geometry of color circle
    */
-  void draw_color_circle(LCD_ST7735SBuffered *LCD,
+  void draw_color_circle(LCD_ST7735SBuffered &LCD,
                          ColorCircleGeometry circle) const;
 
   /**
@@ -225,7 +226,7 @@ protected:
    * @param[in] cursor_width: bottom length of cursor
    * @return ColorSelectorGeometry: geometry of color selector
    */
-  ColorSelectorGeometry calc_color_selector_geometry(
+  std::optional<ColorSelectorGeometry> calc_color_selector_geometry(
       LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
       DISPLAY_UNIT circle_outer_r, DISPLAY_UNIT circle_inner_r,
       DISPLAY_UNIT cursor_height, DISPLAY_UNIT cursor_width) const;
@@ -236,11 +237,11 @@ protected:
    * @param[in] cursor: geometry of cursor
    * @param[in] fg_color: foreground color
    */
-  void draw_color_cursor(LCD_ST7735SBuffered *LCD, ColorCursorGeometry cursor,
+  void draw_color_cursor(LCD_ST7735SBuffered &LCD, ColorCursorGeometry cursor,
                          LCD_COLOR fg_color) const;
 
 public:
-  ColorSelectorDrawer();
+  ColorSelectorDrawer(LCD_ST7735SBuffered &lcd);
   /**
    * @brief set parameters for circle
    * @param[in] params: parameters of circle
@@ -256,11 +257,6 @@ public:
    * @param[in] bg_color: background color
    */
   void set_bg_color(LCD_COLOR bg_color);
-  /**
-   * @brief set LCD object
-   * @param[in] LCD: LCD object
-   */
-  void set_lcd(LCD_ST7735SBuffered *LCD);
 
   /**
    * @brief draw color selector

@@ -1,8 +1,16 @@
 #include "display.hpp"
+#include "LCD_buffer.hpp"
 
 const float pi = std::acos(-1.0);
 
 namespace display {
+bool ColorCircleGeometry::operator==(const ColorCircleGeometry &rhs) const {
+  return float_eq(this->center.x, rhs.center.x) &&
+         float_eq(this->center.y, rhs.center.y) &&
+         float_eq(this->outer_r, rhs.outer_r) &&
+         float_eq(this->inner_r, rhs.inner_r);
+}
+
 void print_color_selector_geometry(ColorSelectorGeometry *geo) {
   printf("cursor:\n"
          "\tarea: (%d, %d) -> w: %d, h: %d\n"
@@ -24,7 +32,7 @@ void print_color_selector_geometry(ColorSelectorGeometry *geo) {
          geo->circle.center.y, geo->circle.outer_r, geo->circle.inner_r);
 }
 
-ColorSelectorDrawer::ColorSelectorDrawer() { this->prev_geo.is_valid = false; }
+ColorSelectorDrawer::ColorSelectorDrawer(LCD_ST7735SBuffered &lcd) : lcd(lcd) {}
 
 void ColorSelectorDrawer::set_circle_params(ColorCircleParams params) {
   this->circle_params = params;
@@ -36,12 +44,10 @@ void ColorSelectorDrawer::set_cursor_params(ColorCursorParams params) {
 
 void ColorSelectorDrawer::set_bg_color(LCD_COLOR bg_color) {
   this->bg_color = bg_color;
-  this->LCD->LCD_Clear(bg_color);
+  this->lcd.LCD_Clear(bg_color);
 }
 
-void ColorSelectorDrawer::set_lcd(LCD_ST7735SBuffered *LCD) { this->LCD = LCD; }
-
-void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered *LCD,
+void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered &LCD,
                                             ColorCircleGeometry circle) const {
   // set inner_r as half as outer_r if invalid value is given
   if (circle.inner_r >= circle.outer_r) {
@@ -50,11 +56,11 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered *LCD,
 
   // cut off area size when circle go out from display
   LCD_LENGTH x_siz =
-      std::min(circle.area_width, (LCD_LENGTH)(LCD->sLCD_DIS.LCD_Dis_Column -
+      std::min(circle.area_width, (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column -
                                                circle.area_x_start));
   LCD_LENGTH y_siz =
       std::min(circle.area_height,
-               (LCD_LENGTH)(LCD->sLCD_DIS.LCD_Dis_Page - circle.area_y_start));
+               (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Page - circle.area_y_start));
 
   // calculate the color of each point
   for (uint i = 0; i < y_siz; ++i) {
@@ -81,23 +87,22 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered *LCD,
       uint16_t h = 90 - th_deg + (th_deg > 90 ? 360 : 0);
 
       LCD_COLOR c = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
-      LCD->LCD_SetPointlColor(x, y, c);
+      lcd.LCD_SetPointlColor(x, y, c);
     }
   }
 }
 
-ColorSelectorGeometry ColorSelectorDrawer::calc_color_selector_geometry(
+std::optional<ColorSelectorGeometry>
+ColorSelectorDrawer::calc_color_selector_geometry(
     LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
     DISPLAY_UNIT circle_outer_r, DISPLAY_UNIT circle_inner_r,
     DISPLAY_UNIT cursor_height, DISPLAY_UNIT cursor_width) const {
   ColorSelectorGeometry retv;
   static float ROUND_EPS = 1e-4;
 
-  retv.is_valid = false;
-
   if (circle_inner_r >= circle_outer_r || circle_inner_r < 0 ||
       cursor_height <= 0 || cursor_width <= 0) {
-    return retv;
+    return std::nullopt;
   }
 
   h %= 360;
@@ -136,24 +141,24 @@ ColorSelectorGeometry ColorSelectorDrawer::calc_color_selector_geometry(
   retv.cursor.area_x_start = std::floor(
       std::clamp(std::min({retv.cursor.vertices[0].x, retv.cursor.vertices[1].x,
                            retv.cursor.vertices[2].x}),
-                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column) +
+                 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column) +
       ROUND_EPS);
   retv.cursor.area_y_start = std::floor(
       std::clamp(std::min({retv.cursor.vertices[0].y, retv.cursor.vertices[1].y,
                            retv.cursor.vertices[2].y}),
-                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Page) +
+                 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Page) +
       ROUND_EPS);
   LCD_POINT cursor_x_end = std::ceil(
       std::clamp(std::max({retv.cursor.vertices[0].x, retv.cursor.vertices[1].x,
                            retv.cursor.vertices[2].x}) +
                      1.0f,
-                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column) -
+                 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column) -
       ROUND_EPS);
   LCD_POINT cursor_y_end = std::ceil(
       std::clamp(std::max({retv.cursor.vertices[0].y, retv.cursor.vertices[1].y,
                            retv.cursor.vertices[2].y}) +
                      1.0f,
-                 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Page) -
+                 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Page) -
       ROUND_EPS);
 
   retv.cursor.area_width = cursor_x_end - retv.cursor.area_x_start;
@@ -162,35 +167,34 @@ ColorSelectorGeometry ColorSelectorDrawer::calc_color_selector_geometry(
   retv.circle.inner_r = circle_inner_r;
   retv.circle.outer_r = circle_outer_r;
   retv.circle.area_x_start =
-      std::clamp(x_start, 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column);
+      std::clamp(x_start, 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column);
   retv.circle.area_y_start =
-      std::clamp(y_start, 0.0f, (float)LCD->sLCD_DIS.LCD_Dis_Column);
+      std::clamp(y_start, 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column);
 
   LCD_POINT circle_x_end =
       std::ceil(std::clamp(x_start + circle_outer_r * 2.0f + 1.0f, 0.0f,
-                           (float)LCD->sLCD_DIS.LCD_Dis_Column) -
+                           (float)lcd.sLCD_DIS.LCD_Dis_Column) -
                 ROUND_EPS);
   LCD_POINT circle_y_end =
       std::ceil(std::clamp(y_start + circle_outer_r * 2.0f + 1.0f, 0.0f,
-                           (float)LCD->sLCD_DIS.LCD_Dis_Page) -
+                           (float)lcd.sLCD_DIS.LCD_Dis_Page) -
                 ROUND_EPS);
 
   retv.circle.area_width = circle_x_end - retv.circle.area_x_start;
   retv.circle.area_height = circle_y_end - retv.circle.area_y_start;
 
-  retv.is_valid = true;
   return retv;
 }
 
-void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered *LCD,
+void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered &LCD,
                                             ColorCursorGeometry cursor,
                                             LCD_COLOR fg_color) const {
   LCD_LENGTH x_siz =
-      std::min(cursor.area_width, (LCD_LENGTH)(LCD->sLCD_DIS.LCD_Dis_Column -
+      std::min(cursor.area_width, (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column -
                                                cursor.area_x_start));
   LCD_LENGTH y_siz =
       std::min(cursor.area_height,
-               (LCD_LENGTH)(LCD->sLCD_DIS.LCD_Dis_Page - cursor.area_y_start));
+               (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Page - cursor.area_y_start));
 
   // calculate the color of each point
   for (LCD_POINT i = 0; i < y_siz; ++i) {
@@ -200,7 +204,7 @@ void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered *LCD,
       // check point if it is inside of cursor
       Float2D p = Float2D{(float)x, (float)y};
       if (is_in_triangle(p, cursor.vertices)) {
-        LCD->LCD_SetPointlColor(x, y, fg_color);
+        lcd.LCD_SetPointlColor(x, y, fg_color);
       }
     }
   }
@@ -208,41 +212,44 @@ void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered *LCD,
 
 void ColorSelectorDrawer::draw_color_selector(int h) {
   // calc cursor geometry
-  ColorSelectorGeometry geo = this->calc_color_selector_geometry(
-      this->LCD, h, this->circle_params.area_x_start,
-      this->circle_params.area_y_start, this->circle_params.outer_r,
-      this->circle_params.inner_r, this->cursor_params.height,
-      this->cursor_params.width);
-  if (!geo.is_valid) {
+  std::optional<ColorSelectorGeometry> opt_geo =
+      this->calc_color_selector_geometry(
+          &this->lcd, h, this->circle_params.area_x_start,
+          this->circle_params.area_y_start, this->circle_params.outer_r,
+          this->circle_params.inner_r, this->cursor_params.height,
+          this->cursor_params.width);
+  if (!opt_geo.has_value()) {
     printf("invalid geometry!!\n");
-    print_color_selector_geometry(&geo);
     return;
   }
 
+  ColorSelectorGeometry geo = opt_geo.value();
   bool is_cleared = this->bg_color != this->prev_bg_color;
   if (is_cleared) {
-    this->draw_color_circle(this->LCD, geo.circle);
+    this->draw_color_circle(this->lcd, geo.circle);
   } else {
     bool is_same_circle =
-        float_eq(geo.circle.center.x, this->prev_geo.circle.center.x) ||
-        float_eq(geo.circle.center.y, this->prev_geo.circle.center.y) ||
-        float_eq(geo.circle.outer_r, this->prev_geo.circle.outer_r) ||
-        float_eq(geo.circle.inner_r, this->prev_geo.circle.inner_r);
+        geo.circle == (opt_geo.has_value()
+                           ? std::optional(opt_geo.value().circle)
+                           : std::nullopt);
 
     // erase old cursor
-    this->draw_color_cursor(LCD, this->prev_geo.cursor, this->bg_color);
-    this->LCD->LCD_buffer_flush();
+    if (this->prev_geo.has_value()) {
+      this->draw_color_cursor(lcd, this->prev_geo.value().cursor,
+                              this->bg_color);
+      this->lcd.LCD_buffer_flush();
+    }
 
     if (!is_same_circle) {
-      this->draw_color_circle(this->LCD, geo.circle);
-      this->LCD->LCD_buffer_flush();
+      this->draw_color_circle(this->lcd, geo.circle);
+      this->lcd.LCD_buffer_flush();
     }
   }
 
-  this->draw_color_cursor(this->LCD, geo.cursor, this->cursor_params.color);
+  this->draw_color_cursor(this->lcd, geo.cursor, this->cursor_params.color);
   this->prev_geo = geo;
   this->prev_bg_color = this->bg_color;
 
-  LCD->LCD_buffer_flush();
+  lcd.LCD_buffer_flush();
 }
 } // namespace display
