@@ -203,6 +203,7 @@ protected:
   LCD_ST7735SBuffered *LCD;
   //! background color
   LCD_COLOR bg_color = BLACK;
+  LCD_COLOR prev_bg_color = BLACK;
 
   /**
    * @brief draw color circle

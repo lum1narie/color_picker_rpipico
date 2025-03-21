@@ -36,6 +36,7 @@ void ColorSelectorDrawer::set_cursor_params(ColorCursorParams params) {
 
 void ColorSelectorDrawer::set_bg_color(LCD_COLOR bg_color) {
   this->bg_color = bg_color;
+  this->LCD->LCD_Clear(bg_color);
 }
 
 void ColorSelectorDrawer::set_lcd(LCD_ST7735SBuffered *LCD) { this->LCD = LCD; }
@@ -218,24 +219,29 @@ void ColorSelectorDrawer::draw_color_selector(int h) {
     return;
   }
 
-  bool is_same_circle =
-      float_eq(geo.circle.center.x, this->prev_geo.circle.center.x) ||
-      float_eq(geo.circle.center.y, this->prev_geo.circle.center.y) ||
-      float_eq(geo.circle.outer_r, this->prev_geo.circle.outer_r) ||
-      float_eq(geo.circle.inner_r, this->prev_geo.circle.inner_r);
-
-  // erase old cursor
-  this->draw_color_cursor(LCD, this->prev_geo.cursor, this->bg_color);
-
-  if (is_same_circle) {
-    this->LCD->LCD_buffer_flush();
-  } else {
+  bool is_cleared = this->bg_color != this->prev_bg_color;
+  if (is_cleared) {
     this->draw_color_circle(this->LCD, geo.circle);
+  } else {
+    bool is_same_circle =
+        float_eq(geo.circle.center.x, this->prev_geo.circle.center.x) ||
+        float_eq(geo.circle.center.y, this->prev_geo.circle.center.y) ||
+        float_eq(geo.circle.outer_r, this->prev_geo.circle.outer_r) ||
+        float_eq(geo.circle.inner_r, this->prev_geo.circle.inner_r);
+
+    // erase old cursor
+    this->draw_color_cursor(LCD, this->prev_geo.cursor, this->bg_color);
+    this->LCD->LCD_buffer_flush();
+
+    if (!is_same_circle) {
+      this->draw_color_circle(this->LCD, geo.circle);
+      this->LCD->LCD_buffer_flush();
+    }
   }
 
   this->draw_color_cursor(this->LCD, geo.cursor, this->cursor_params.color);
-
   this->prev_geo = geo;
+  this->prev_bg_color = this->bg_color;
 
   LCD->LCD_buffer_flush();
 }
