@@ -1,3 +1,4 @@
+#include "LCD.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 #include <cstdio>

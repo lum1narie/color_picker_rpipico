@@ -13,6 +13,8 @@
 namespace display {
 #define DISPLAY_UNIT float
 
+extern const float pi;
+
 struct LCDPoint2D {
   LCD_POINT x;
   LCD_POINT y;
@@ -107,6 +109,16 @@ inline bool is_in_triangle(Float2D p, Float2D *triangle) {
   return (sign_1 == sign_2) && (sign_1 == sign_3);
 }
 
+// TODO: doc
+inline uint vec_to_h(Float2D v) {
+  float th = std::atan2(v.y, v.x);
+  int th_deg = 180 * th / pi;
+  return th_deg + (th_deg < -120 ? 480 : 120);
+}
+
+// TODO: doc
+inline float h_to_angle(int h) { return (120.0 - (float)h) * pi / 180.0; }
+
 /**
  * @brief geometry of color circle
  */
@@ -127,8 +139,7 @@ struct ColorCircleGeometry {
   //! radius of inner void circle
   DISPLAY_UNIT inner_r = 0;
 
-
-  bool operator==(const ColorCircleGeometry& rhs) const;
+  bool operator==(const ColorCircleGeometry &rhs) const;
 };
 
 /**

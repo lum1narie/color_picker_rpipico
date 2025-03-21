@@ -1,9 +1,9 @@
 #include "display.hpp"
 #include "LCD_buffer.hpp"
 
+namespace display {
 const float pi = std::acos(-1.0);
 
-namespace display {
 bool ColorCircleGeometry::operator==(const ColorCircleGeometry &rhs) const {
   return float_eq(this->center.x, rhs.center.x) &&
          float_eq(this->center.y, rhs.center.y) &&
@@ -56,8 +56,8 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered &LCD,
 
   // cut off area size when circle go out from display
   LCD_LENGTH x_siz =
-      std::min(circle.area_width, (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column -
-                                               circle.area_x_start));
+      std::min(circle.area_width,
+               (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column - circle.area_x_start));
   LCD_LENGTH y_siz =
       std::min(circle.area_height,
                (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Page - circle.area_y_start));
@@ -78,14 +78,11 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered &LCD,
       // deal point in polar coordinates
       float r =
           sqrt(x_from_center * x_from_center + y_from_center * y_from_center);
-      float th = atan2(y_from_center, x_from_center);
-
       if (r < circle.inner_r || r > circle.outer_r) {
         continue;
       }
-      int th_deg = 180 * th / pi;
-      uint16_t h = 90 - th_deg + (th_deg > 90 ? 360 : 0);
 
+      uint16_t h = vec_to_h({x_from_center, y_from_center});
       LCD_COLOR c = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
       lcd.LCD_SetPointlColor(x, y, c);
     }
@@ -105,38 +102,37 @@ ColorSelectorDrawer::calc_color_selector_geometry(
     return std::nullopt;
   }
 
-  h %= 360;
-
-  float cos_th = std::cos(h * pi / 180.0);
-  float sin_th = std::sin(h * pi / 180.0);
+  float th = h_to_angle(h);
+  float cos_th = std::cos(th);
+  float sin_th = std::sin(th);
 
   retv.circle.center = {x_start + circle_outer_r, y_start + circle_outer_r};
 
-  float v0_x_init_from_center = 0;
-  float v0_y_init_from_center = -circle_outer_r;
-  float v1_x_init_from_center = -cursor_width;
-  float v1_y_init_from_center = -circle_outer_r - cursor_height;
-  float v2_x_init_from_center = cursor_width;
-  float v2_y_init_from_center = -circle_outer_r - cursor_height;
+  float v0_x_init_from_center = circle_outer_r;
+  float v0_y_init_from_center = 0;
+  float v1_x_init_from_center = circle_outer_r + cursor_height;
+  float v1_y_init_from_center = -cursor_width;
+  float v2_x_init_from_center = circle_outer_r + cursor_height;
+  float v2_y_init_from_center = cursor_width;
 
   retv.cursor.vertices[0].x = retv.circle.center.x +
                               v0_x_init_from_center * cos_th -
                               v0_y_init_from_center * sin_th;
-  retv.cursor.vertices[0].y = retv.circle.center.y +
-                              v0_x_init_from_center * sin_th +
-                              v0_y_init_from_center * cos_th;
+  retv.cursor.vertices[0].y =
+      retv.circle.center.y -
+      (v0_x_init_from_center * sin_th + v0_y_init_from_center * cos_th);
   retv.cursor.vertices[1].x = retv.circle.center.x +
                               v1_x_init_from_center * cos_th -
                               v1_y_init_from_center * sin_th;
-  retv.cursor.vertices[1].y = retv.circle.center.y +
-                              v1_x_init_from_center * sin_th +
-                              v1_y_init_from_center * cos_th;
+  retv.cursor.vertices[1].y =
+      retv.circle.center.y -
+      (v1_x_init_from_center * sin_th + v1_y_init_from_center * cos_th);
   retv.cursor.vertices[2].x = retv.circle.center.x +
                               v2_x_init_from_center * cos_th -
                               v2_y_init_from_center * sin_th;
-  retv.cursor.vertices[2].y = retv.circle.center.y +
-                              v2_x_init_from_center * sin_th +
-                              v2_y_init_from_center * cos_th;
+  retv.cursor.vertices[2].y =
+      retv.circle.center.y -
+      (v2_x_init_from_center * sin_th + v2_y_init_from_center * cos_th);
 
   retv.cursor.area_x_start = std::floor(
       std::clamp(std::min({retv.cursor.vertices[0].x, retv.cursor.vertices[1].x,
@@ -190,8 +186,8 @@ void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered &LCD,
                                             ColorCursorGeometry cursor,
                                             LCD_COLOR fg_color) const {
   LCD_LENGTH x_siz =
-      std::min(cursor.area_width, (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column -
-                                               cursor.area_x_start));
+      std::min(cursor.area_width,
+               (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Column - cursor.area_x_start));
   LCD_LENGTH y_siz =
       std::min(cursor.area_height,
                (LCD_LENGTH)(lcd.sLCD_DIS.LCD_Dis_Page - cursor.area_y_start));
