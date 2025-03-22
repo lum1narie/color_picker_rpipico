@@ -1,5 +1,8 @@
 #include "display.hpp"
+#include "LCD1in8/inc/LCD.h"
 #include "LCD_buffer.hpp"
+#include "color.hpp"
+#include <cstdarg>
 
 namespace display {
 const float pi = std::acos(-1.0);
@@ -91,9 +94,10 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered &LCD,
 
 std::optional<ColorSelectorGeometry>
 ColorSelectorDrawer::calc_color_selector_geometry(
-    LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
-    DISPLAY_UNIT circle_outer_r, DISPLAY_UNIT circle_inner_r,
-    DISPLAY_UNIT cursor_height, DISPLAY_UNIT cursor_width) const {
+    LCD_ST7735S *LCD, int h, int s, int v, DISPLAY_UNIT x_start,
+    DISPLAY_UNIT y_start, DISPLAY_UNIT circle_outer_r,
+    DISPLAY_UNIT circle_inner_r, DISPLAY_UNIT cursor_height,
+    DISPLAY_UNIT cursor_width) const {
   ColorSelectorGeometry retv;
   static float ROUND_EPS = 1e-4;
 
@@ -179,6 +183,32 @@ ColorSelectorDrawer::calc_color_selector_geometry(
   retv.circle.area_width = circle_x_end - retv.circle.area_x_start;
   retv.circle.area_height = circle_y_end - retv.circle.area_y_start;
 
+  float sqrt_2 = std::sqrt(2.0f);
+  retv.sv.x_min = retv.circle.center.x - circle_inner_r / sqrt_2;
+  retv.sv.x_max = retv.circle.center.x + circle_inner_r / sqrt_2;
+  retv.sv.y_min = retv.circle.center.y - circle_inner_r / sqrt_2;
+  retv.sv.y_max = retv.circle.center.y + circle_inner_r / sqrt_2;
+
+  retv.sv.area_x_start = std::ceil(
+      std::clamp(retv.sv.x_min, 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column) -
+      ROUND_EPS);
+  retv.sv.area_y_start = std::ceil(
+      std::clamp(retv.sv.y_min, 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Page) -
+      ROUND_EPS);
+  LCD_POINT sv_x_end = std::clamp(retv.sv.x_max + 1.0f, 0.0f,
+                                  (float)lcd.sLCD_DIS.LCD_Dis_Column);
+  LCD_POINT sv_y_end =
+      std::clamp(retv.sv.y_max + 1.0f, 0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Page);
+  retv.sv.area_width = sv_x_end - retv.sv.area_x_start;
+  retv.sv.area_height = sv_y_end - retv.sv.area_y_start;
+
+  retv.sv_cursor.x = std::clamp(
+      (retv.sv.x_max * (float)s + retv.sv.x_min * (255.0f - (float)s)) / 255.0f,
+      0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Column);
+  retv.sv_cursor.y = std::clamp(
+      (retv.sv.y_min * (float)v + retv.sv.y_max * (255.0f - (float)v)) / 255.0f,
+      0.0f, (float)lcd.sLCD_DIS.LCD_Dis_Page);
+
   return retv;
 }
 
@@ -206,11 +236,75 @@ void ColorSelectorDrawer::draw_color_cursor(LCD_ST7735SBuffered &LCD,
   }
 }
 
-void ColorSelectorDrawer::draw_color_selector(int h) {
+void ColorSelectorDrawer::draw_color_svrect(LCD_ST7735SBuffered &LCD,
+                                            ColorSVRectangleGeometry rect,
+                                            uint h) const {
+  h %= 360;
+
+  for (LCD_POINT i = 0; i < rect.area_height; ++i) {
+    LCD_POINT y = rect.area_y_start + i;
+    float y_ratio = std::clamp(
+        (rect.y_max - (float)y) / (rect.y_max - rect.y_min), 0.0f, 1.0f);
+    for (LCD_POINT j = 0; j < rect.area_width; ++j) {
+      LCD_POINT x = rect.area_x_start + j;
+      float x_ratio = std::clamp(
+          ((float)x - rect.x_min) / (rect.x_max - rect.x_min), 0.0f, 1.0f);
+      uint s = 255.0f * x_ratio;
+      uint v = 255.0f * y_ratio;
+      LCD.LCD_SetPointlColor(x, y, color::HSV(h, s, v).to_rgb().to_565());
+    }
+  }
+}
+
+void ColorSelectorDrawer::draw_color_svrect_cursor(
+    LCD_ST7735SBuffered &LCD, ColorSVRectangleCursorGeometry cursor) const {
+  const uint RADIUS = 6;
+  const uint MID_SPACE = 3;
+  LCD_POINT x_left_0 =
+      std::clamp((int)(cursor.x - RADIUS), 0, (int)LCD.sLCD_DIS.LCD_Dis_Column);
+  LCD_POINT x_left_1 = std::clamp((int)(cursor.x - MID_SPACE), 0,
+                                  (int)LCD.sLCD_DIS.LCD_Dis_Column);
+  LCD_POINT x_right_0 =
+      std::clamp((int)(cursor.x + RADIUS), 0, (int)LCD.sLCD_DIS.LCD_Dis_Column);
+  LCD_POINT x_right_1 = std::clamp((int)(cursor.x + MID_SPACE), 0,
+                                   (int)LCD.sLCD_DIS.LCD_Dis_Column);
+  LCD_POINT y_up_0 =
+      std::clamp((int)(cursor.y - RADIUS), 0, (int)LCD.sLCD_DIS.LCD_Dis_Page);
+  LCD_POINT y_up_1 = std::clamp((int)(cursor.y - MID_SPACE), 0,
+                                (int)LCD.sLCD_DIS.LCD_Dis_Page);
+  LCD_POINT y_down_0 =
+      std::clamp((int)(cursor.y + RADIUS), 0, (int)LCD.sLCD_DIS.LCD_Dis_Page);
+  LCD_POINT y_down_1 = std::clamp((int)(cursor.y + MID_SPACE), 0,
+                                  (int)LCD.sLCD_DIS.LCD_Dis_Page);
+
+  LCD.LCD_DrawLine(x_left_0, cursor.y, x_left_1, cursor.y, BLACK, LINE_SOLID,
+                   DOT_PIXEL_2X2);
+  LCD.LCD_DrawLine(x_left_0, cursor.y, x_left_1, cursor.y, WHITE, LINE_SOLID,
+                   DOT_PIXEL_1X1);
+  LCD.LCD_DrawLine(x_right_1, cursor.y, x_right_0, cursor.y, BLACK, LINE_SOLID,
+                   DOT_PIXEL_2X2);
+  LCD.LCD_DrawLine(x_right_1, cursor.y, x_right_0, cursor.y, WHITE, LINE_SOLID,
+                   DOT_PIXEL_1X1);
+  LCD.LCD_DrawLine(cursor.x, y_up_0, cursor.x, y_up_1, BLACK, LINE_SOLID,
+                   DOT_PIXEL_2X2);
+  LCD.LCD_DrawLine(cursor.x, y_up_0, cursor.x, y_up_1, WHITE, LINE_SOLID,
+                   DOT_PIXEL_1X1);
+  LCD.LCD_DrawLine(cursor.x, y_down_1, cursor.x, y_down_0, BLACK, LINE_SOLID,
+                   DOT_PIXEL_2X2);
+  LCD.LCD_DrawLine(cursor.x, y_down_1, cursor.x, y_down_0, WHITE, LINE_SOLID,
+                   DOT_PIXEL_1X1);
+
+  LCD.LCD_DrawCircle(cursor.x, cursor.y, RADIUS, BLACK, DRAW_EMPTY,
+                     DOT_PIXEL_2X2);
+  LCD.LCD_DrawCircle(cursor.x, cursor.y, RADIUS, WHITE, DRAW_EMPTY,
+                     DOT_PIXEL_1X1);
+}
+
+void ColorSelectorDrawer::draw_color_selector(int h, int s, int v) {
   // calc cursor geometry
   std::optional<ColorSelectorGeometry> opt_geo =
       this->calc_color_selector_geometry(
-          &this->lcd, h, this->circle_params.area_x_start,
+          &this->lcd, h, s, v, this->circle_params.area_x_start,
           this->circle_params.area_y_start, this->circle_params.outer_r,
           this->circle_params.inner_r, this->cursor_params.height,
           this->cursor_params.width);
@@ -243,6 +337,13 @@ void ColorSelectorDrawer::draw_color_selector(int h) {
   }
 
   this->draw_color_cursor(this->lcd, geo.cursor, this->cursor_params.color);
+
+  // FIXME: test code
+  // ----------------------------------------
+  this->draw_color_svrect(this->lcd, geo.sv, h);
+  this->draw_color_svrect_cursor(this->lcd, geo.sv_cursor);
+  // ----------------------------------------
+
   this->prev_geo = geo;
   this->prev_bg_color = this->bg_color;
 

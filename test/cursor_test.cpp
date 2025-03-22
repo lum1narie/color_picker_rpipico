@@ -92,7 +92,7 @@ public:
 
     int h = 0;
     while (true) {
-      cs_drawer.draw_color_selector(h);
+      cs_drawer.draw_color_selector(h, 50, 50);
       h += 2;
       h %= 360;
       sleep_ms(16);

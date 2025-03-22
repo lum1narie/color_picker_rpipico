@@ -95,14 +95,14 @@ public:
     int t = 0;
     while (true) {
       if (t % 16 == 0) {
-        cs_drawer.draw_color_selector(h_cs);
+        cs_drawer.draw_color_selector(h_cs, 50, 50);
         h_cs += 2;
         h_cs %= 360;
       }
       if (t % 500 == 0) {
-        cs_drawer.set_bg_color(color::HSV(0, 100, v_bg).to_rgb().to_565());
-        v_bg += 10;
-        v_bg %= 100;
+        cs_drawer.set_bg_color(color::HSV(0, 0, v_bg).to_rgb().to_565());
+        v_bg += 20;
+        v_bg %= 255;
       }
 
       ++t;

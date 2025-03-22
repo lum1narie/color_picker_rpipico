@@ -8,7 +8,6 @@
 #include <optional>
 
 #include "LCD_buffer.hpp"
-#include "color.hpp"
 
 namespace display {
 #define DISPLAY_UNIT float
@@ -159,6 +158,27 @@ struct ColorCursorGeometry {
   Float2D vertices[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
 };
 
+struct ColorSVRectangleGeometry {
+  //! x coordinate of left-up-most point
+  LCD_POINT area_x_start = 0;
+  //! y coordinate of left-up-most point
+  LCD_POINT area_y_start = 0;
+  //! height of area
+  LCD_LENGTH area_height = 0;
+  //! width of area
+  LCD_LENGTH area_width = 0;
+
+  DISPLAY_UNIT x_min = 0;
+  DISPLAY_UNIT x_max = 0;
+  DISPLAY_UNIT y_min = 0;
+  DISPLAY_UNIT y_max = 0;
+};
+
+struct ColorSVRectangleCursorGeometry {
+  LCD_POINT x;
+  LCD_POINT y;
+};
+
 /**
  * @brief geometry of color selector
  */
@@ -167,6 +187,9 @@ struct ColorSelectorGeometry {
   ColorCircleGeometry circle;
   //! geometry of cursor
   ColorCursorGeometry cursor;
+  //! geometry of SV rectangle
+  ColorSVRectangleGeometry sv;
+  ColorSVRectangleCursorGeometry sv_cursor;
 };
 
 /**
@@ -238,9 +261,10 @@ protected:
    * @return ColorSelectorGeometry: geometry of color selector
    */
   std::optional<ColorSelectorGeometry> calc_color_selector_geometry(
-      LCD_ST7735S *LCD, int h, DISPLAY_UNIT x_start, DISPLAY_UNIT y_start,
-      DISPLAY_UNIT circle_outer_r, DISPLAY_UNIT circle_inner_r,
-      DISPLAY_UNIT cursor_height, DISPLAY_UNIT cursor_width) const;
+      LCD_ST7735S *LCD, int h, int s, int v, DISPLAY_UNIT x_start,
+      DISPLAY_UNIT y_start, DISPLAY_UNIT circle_outer_r,
+      DISPLAY_UNIT circle_inner_r, DISPLAY_UNIT cursor_height,
+      DISPLAY_UNIT cursor_width) const;
 
   /**
    * @brief draw cursor for color circle
@@ -250,6 +274,12 @@ protected:
    */
   void draw_color_cursor(LCD_ST7735SBuffered &LCD, ColorCursorGeometry cursor,
                          LCD_COLOR fg_color) const;
+
+  void draw_color_svrect(LCD_ST7735SBuffered &LCD,
+                         ColorSVRectangleGeometry rect, uint h) const;
+
+  void draw_color_svrect_cursor(LCD_ST7735SBuffered &LCD,
+                                ColorSVRectangleCursorGeometry cursor) const;
 
 public:
   ColorSelectorDrawer(LCD_ST7735SBuffered &lcd);
@@ -273,7 +303,7 @@ public:
    * @brief draw color selector
    * @param[in] h: hue of color
    */
-  void draw_color_selector(int h);
+  void draw_color_selector(int h, int s, int v);
 };
 
 } // namespace display
