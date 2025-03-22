@@ -1,4 +1,3 @@
-#include "LCD.h"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 #include <cstdio>
@@ -91,12 +90,26 @@ public:
     cs_drawer.set_circle_params({40, 30, 40, 30});
     cs_drawer.set_cursor_params({10, 4, WHITE});
 
-    int h = 0;
+    int h_cs = 0;
+    int v_bg = 0;
+    int t = 0;
     while (true) {
-      cs_drawer.draw_color_selector(h);
-      h += 2;
-      h %= 360;
-      sleep_ms(16);
+      if (t % 16 == 0) {
+        cs_drawer.draw_color_selector(h_cs);
+        h_cs += 2;
+        h_cs %= 360;
+      }
+      if (t % 500 == 0) {
+        cs_drawer.set_bg_color(color::HSV(0, 100, v_bg).to_rgb().to_565());
+        v_bg += 10;
+        v_bg %= 100;
+      }
+
+      ++t;
+      if (t >= 2000) {
+        t -= 2000;
+      }
+      sleep_ms(1);
     }
   }
 };
