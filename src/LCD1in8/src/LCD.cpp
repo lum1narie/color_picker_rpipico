@@ -9,6 +9,7 @@ lines, drawing, writing and other functions to achieve
 
 #include "LCD.h"
 
+#include <cstdint>
 #include <stdio.h>
 #include <stdlib.h> //itoa()
 
@@ -491,7 +492,7 @@ void LCD_ST7735S::LCD_DrawLine(LCD_POINT Xstart, LCD_POINT Ystart,
   for (;;) {
     Line_Style_Temp++;
     // Painted dotted line, 2 point is really virtual
-    if (Line_Style == LINE_DOTTED && Line_Style_Temp % 3 == 0) {
+    if (Line_Style == LINE_DOTTED && Line_Style_Temp >= 3) {
       LCD_DrawPoint(Xpoint, Ypoint, LCD_BACKGROUND, Dot_Pixel, DOT_STYLE_DFT);
       Line_Style_Temp = 0;
     } else {
@@ -649,7 +650,7 @@ void LCD_ST7735S::LCD_DisplayChar(LCD_POINT Xpoint, LCD_POINT Ypoint,
   }
 
   uint32_t Char_Offset = (Acsii_Char - ' ') * Font->Height *
-                         (Font->Width / 8 + (Font->Width % 8 ? 1 : 0));
+                         ((Font->Width >> 3) + ((Font->Width & 7) ? 1 : 0));
   const unsigned char *ptr = &Font->table[Char_Offset];
 
   for (Page = 0; Page < Font->Height; Page++) {
@@ -659,21 +660,21 @@ void LCD_ST7735S::LCD_DisplayChar(LCD_POINT Xpoint, LCD_POINT Ypoint,
       // color is consistent
       if (FONT_BACKGROUND ==
           Color_Background) { // this process is to speed up the scan
-        if (*ptr & (0x80 >> (Column % 8)))
+        if (*ptr & (0x80 >> (Column >> 3)))
           LCD_SetPointlColor(Xpoint + Column, Ypoint + Page, Color_Foreground);
       } else {
-        if (*ptr & (0x80 >> (Column % 8))) {
+        if (*ptr & (0x80 >> (Column >> 3))) {
           LCD_SetPointlColor(Xpoint + Column, Ypoint + Page, Color_Foreground);
         } else {
           LCD_SetPointlColor(Xpoint + Column, Ypoint + Page, Color_Background);
         }
       }
       // One pixel is 8 bits
-      if (Column % 8 == 7) {
+      if ((Column & 7) == 7) {
         ptr++;
       }
     } /* Write a line */
-    if (Font->Width % 8 != 0) {
+    if ((Font->Width & 7) != 0) {
       ptr++;
     }
   } /* Write all */
@@ -730,7 +731,7 @@ function:	Display the string
 parameter:
                         Xstart ：X coordinate
                         Ystart : Y coordinate
-                        Nummber: The number displayed
+                        Number: The number displayed
                         Font  ：A structure pointer that displays a character
 size Color_Background : Select the background color of the English character
                         Color_Foreground : Select the foreground color of the
@@ -738,7 +739,7 @@ English character
 ********************************************************************************/
 #define ARRAY_LEN 255
 void LCD_ST7735S::LCD_DisplayNum(LCD_POINT Xpoint, LCD_POINT Ypoint,
-                                 int32_t Nummber, sFONT *Font,
+                                 int32_t Number, sFONT *Font,
                                  LCD_COLOR Color_Background,
                                  LCD_COLOR Color_Foreground) {
 
@@ -751,10 +752,11 @@ void LCD_ST7735S::LCD_DisplayNum(LCD_POINT Xpoint, LCD_POINT Ypoint,
   }
 
   // Converts a number to a string
-  while (Nummber) {
-    Num_Array[Num_Bit] = Nummber % 10 + '0';
+  while (Number != 0) {
+    int32_t Number_div_10 = Number / 10;
+    Num_Array[Num_Bit] = Number - (Number_div_10 * 10) + '0';
     Num_Bit++;
-    Nummber /= 10;
+    Number = Number_div_10;
   }
 
   // The string is inverted
@@ -795,8 +797,8 @@ void LCD_ST7735S::LCD_Show(void) {
     uint16_t Cx1 = 40, Cy1 = 85, Cr = 12;
     uint16_t Cx2 = Cx1 + (2.5 * Cr), Cy2 = Cy1;
     uint16_t Cx3 = Cx1 + (5 * Cr), Cy3 = Cy1;
-    uint16_t Cx4 = (Cx1 + Cx2) / 2, Cy4 = Cy1 + Cr;
-    uint16_t Cx5 = (Cx2 + Cx3) / 2, Cy5 = Cy1 + Cr;
+    uint16_t Cx4 = ((Cx1 + Cx2) >> 1), Cy4 = Cy1 + Cr;
+    uint16_t Cx5 = ((Cx2 + Cx3) >> 1), Cy5 = Cy1 + Cr;
 
     LCD_DrawCircle(Cx1, Cy1, Cr, BLUE, DRAW_EMPTY, DOT_PIXEL_DFT);
     LCD_DrawCircle(Cx2, Cy2, Cr, BLACK, DRAW_EMPTY, DOT_PIXEL_DFT);
@@ -839,10 +841,11 @@ void LCD_ST7735S::LCD_Show(void) {
 
     printf("LCD Draw Olympic Rings\r\n");
     uint16_t Cx1 = 45, Cy1 = 80, Cr = 12;
-    uint16_t Cx2 = Cx1 + (2.5 * Cr), Cy2 = Cy1;
+    uint16_t Crx5 = 5 * Cr;
+    uint16_t Cx2 = Cx1 + (Crx5 >> 1), Cy2 = Cy1;
     uint16_t Cx3 = Cx1 + (5 * Cr), Cy3 = Cy1;
-    uint16_t Cx4 = (Cx1 + Cx2) / 2, Cy4 = Cy1 + Cr;
-    uint16_t Cx5 = (Cx2 + Cx3) / 2, Cy5 = Cy1 + Cr;
+    uint16_t Cx4 = ((Cx1 + Cx2) >> 1), Cy4 = Cy1 + Cr;
+    uint16_t Cx5 = ((Cx2 + Cx3) >> 1), Cy5 = Cy1 + Cr;
 
     LCD_DrawCircle(Cx1, Cy1, Cr, BLUE, DRAW_EMPTY, DOT_PIXEL_DFT);
     LCD_DrawCircle(Cx2, Cy2, Cr, BLACK, DRAW_EMPTY, DOT_PIXEL_DFT);

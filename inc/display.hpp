@@ -14,6 +14,8 @@ namespace display {
 #define DISPLAY_UNIT float
 
 extern const float pi;
+extern const float pi_inv;
+extern const float f180_inv;
 
 struct LCDPoint2D {
   LCD_POINT x;
@@ -92,7 +94,7 @@ inline bool float_eq(float x, float y) {
 
   float m = std::max(std::min(std::abs(x), std::abs(y)),
                      std::numeric_limits<float>::min());
-  return d / m < REL_EPS;
+  return d < REL_EPS * m;
 }
 
 /**
@@ -112,12 +114,12 @@ inline bool is_in_triangle(Float2D p, Float2D *triangle) {
 // TODO: doc
 inline uint vec_to_h(Float2D v) {
   float th = std::atan2(v.y, v.x);
-  int th_deg = 180 * th / pi;
+  int th_deg = 180 * th * pi_inv;
   return th_deg + (th_deg < -120 ? 480 : 120);
 }
 
 // TODO: doc
-inline float h_to_angle(int h) { return (120.0 - (float)h) * pi / 180.0; }
+inline float h_to_angle(int h) { return (120.0 - (float)h) * pi * f180_inv; }
 
 /**
  * @brief geometry of color circle

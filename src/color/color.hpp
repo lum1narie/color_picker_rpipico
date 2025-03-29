@@ -38,6 +38,8 @@ public:
    * @brief Convert to RGB color
    */
   RGB to_rgb() const;
+
+  RGB to_rgb_approx() const;
 };
 
 } // namespace color

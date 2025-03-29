@@ -41,4 +41,36 @@ RGB HSV::to_rgb() const {
     return RGB(val_max, val_min, val_mid);
   }
 };
+
+inline uint16_t div_60_u16(uint16_t x) { return ((uint32_t)x * 1092) >> 16; }
+
+RGB HSV::to_rgb_approx() const {
+  uint8_t val_max = v;
+  uint8_t val_min = (uint16_t)val_max * (uint16_t)(255 - s) / 255;
+  uint8_t val_mid;
+
+  if (h > 360) {
+    return RGB(val_max, val_max, val_max);
+  }
+
+  if (h < 60) {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * h) + val_min;
+    return RGB(val_max, val_mid, val_min);
+  } else if (h < 120) {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * (120 - h)) + val_min;
+    return RGB(val_mid, val_max, val_min);
+  } else if (h < 180) {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * (h - 120)) + val_min;
+    return RGB(val_min, val_max, val_mid);
+  } else if (h < 240) {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * (240 - h)) + val_min;
+    return RGB(val_min, val_mid, val_max);
+  } else if (h < 300) {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * (h - 240)) + val_min;
+    return RGB(val_mid, val_min, val_max);
+  } else {
+    val_mid = div_60_u16((uint16_t)(val_max - val_min) * (360 - h)) + val_min;
+    return RGB(val_max, val_min, val_mid);
+  }
+};
 } // namespace color

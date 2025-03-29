@@ -6,6 +6,8 @@
 
 namespace display {
 const float pi = std::acos(-1.0);
+const float pi_inv = 1.0f / pi;
+const float f180_inv = 1.0f / 180.f;
 
 bool ColorCircleGeometry::operator==(const ColorCircleGeometry &rhs) const {
   return float_eq(this->center.x, rhs.center.x) &&
@@ -90,7 +92,7 @@ void ColorSelectorDrawer::draw_color_circle(LCD_ST7735SBuffered &LCD,
       }
 
       uint16_t h = vec_to_h({x_from_center, y_from_center});
-      LCD_COLOR c = color::HSV(h, 0xFF, 0xFF).to_rgb().to_565();
+      LCD_COLOR c = color::HSV(h, 0xFF, 0xFF).to_rgb_approx().to_565();
       LCD.LCD_SetPointlColor(x, y, c);
     }
   }
@@ -192,12 +194,12 @@ ColorSVRectangleGeometry calc_color_sv_geometry(const LCD_ST7735S &LCD,
                                                 DISPLAY_UNIT circle_inner_r) {
   ColorSVRectangleGeometry retv;
   constexpr float ROUND_EPS = 1e-4;
-  static const float sqrt_2 = std::sqrt(2.0f);
+  static const float sqrt_2_inv = std::sqrt(0.5f);
 
-  retv.x_min = circle_center.x - circle_inner_r / sqrt_2;
-  retv.x_max = circle_center.x + circle_inner_r / sqrt_2;
-  retv.y_min = circle_center.y - circle_inner_r / sqrt_2;
-  retv.y_max = circle_center.y + circle_inner_r / sqrt_2;
+  retv.x_min = circle_center.x - circle_inner_r * sqrt_2_inv;
+  retv.x_max = circle_center.x + circle_inner_r * sqrt_2_inv;
+  retv.y_min = circle_center.y - circle_inner_r * sqrt_2_inv;
+  retv.y_max = circle_center.y + circle_inner_r * sqrt_2_inv;
 
   retv.area_x_start = std::ceil(
       std::clamp(retv.x_min, 0.0f, (float)LCD.sLCD_DIS.LCD_Dis_Column) -
@@ -263,8 +265,7 @@ ColorSelectorDrawer::calc_color_selector_geometry(
                                            circle_outer_r, circle_inner_r);
   retv.cursor = calc_color_cursor_geometry(
       LCD, h, retv.circle.center, circle_outer_r, cursor_height, cursor_width);
-  retv.sv =
-      calc_color_sv_geometry(LCD, retv.circle.center, circle_inner_r);
+  retv.sv = calc_color_sv_geometry(LCD, retv.circle.center, circle_inner_r);
   retv.sv_cursor =
       calc_color_sv_cursor_geometry(LCD, retv.sv, sv_cursor_radius, s, v);
 
@@ -310,7 +311,7 @@ void ColorSelectorDrawer::draw_color_svrect(LCD_ST7735SBuffered &LCD,
           ((float)x - rect.x_min) / (rect.x_max - rect.x_min), 0.0f, 1.0f);
       uint s = 255.0f * x_ratio;
       uint v = 255.0f * y_ratio;
-      LCD.LCD_SetPointlColor(x, y, color::HSV(h, s, v).to_rgb().to_565());
+      LCD.LCD_SetPointlColor(x, y, color::HSV(h, s, v).to_rgb_approx().to_565());
     }
   }
 }
