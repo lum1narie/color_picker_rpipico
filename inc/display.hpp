@@ -7,6 +7,7 @@
 #include <limits>
 #include <optional>
 
+#include "LCD.h"
 #include "LCD_buffer.hpp"
 
 namespace display {
@@ -174,9 +175,21 @@ struct ColorSVRectangleGeometry {
   DISPLAY_UNIT y_max = 0;
 };
 
-struct ColorSVRectangleCursorGeometry {
+struct ColorSVCursorGeometry {
+  //! x coordinate of left-up-most point
+  LCD_POINT area_x_start = 0;
+  //! y coordinate of left-up-most point
+  LCD_POINT area_y_start = 0;
+  //! height of area
+  LCD_LENGTH area_height = 0;
+  //! width of area
+  LCD_LENGTH area_width = 0;
+
   LCD_POINT x;
   LCD_POINT y;
+
+  LCD_LENGTH radius;
+  LCD_LENGTH mid_space;
 };
 
 /**
@@ -189,7 +202,7 @@ struct ColorSelectorGeometry {
   ColorCursorGeometry cursor;
   //! geometry of SV rectangle
   ColorSVRectangleGeometry sv;
-  ColorSVRectangleCursorGeometry sv_cursor;
+  ColorSVCursorGeometry sv_cursor;
 };
 
 /**
@@ -225,6 +238,11 @@ struct ColorCursorParams {
   LCD_COLOR color;
 };
 
+struct ColorSVCursorParams {
+  LCD_LENGTH radius;
+  LCD_LENGTH mid_space;
+};
+
 /**
  * @brief drawer of color selector
  */
@@ -234,6 +252,7 @@ protected:
   std::optional<ColorSelectorGeometry> prev_geo = std::nullopt;
   ColorCircleParams circle_params;
   ColorCursorParams cursor_params;
+  ColorSVCursorParams sv_cursor_params;
   //! LCD object to draw on
   LCD_ST7735SBuffered &lcd;
   //! background color
@@ -258,13 +277,14 @@ protected:
    * @param[in] circle_inner_r: radius of inner void circle
    * @param[in] cursor_height: height of cursor
    * @param[in] cursor_width: bottom length of cursor
+   * @param[in] sv_cursor_radius: TODO:
    * @return ColorSelectorGeometry: geometry of color selector
    */
   std::optional<ColorSelectorGeometry> calc_color_selector_geometry(
-      LCD_ST7735S *LCD, int h, int s, int v, DISPLAY_UNIT x_start,
+      const LCD_ST7735S &LCD, int h, int s, int v, DISPLAY_UNIT x_start,
       DISPLAY_UNIT y_start, DISPLAY_UNIT circle_outer_r,
       DISPLAY_UNIT circle_inner_r, DISPLAY_UNIT cursor_height,
-      DISPLAY_UNIT cursor_width) const;
+      DISPLAY_UNIT cursor_width, LCD_LENGTH sv_cursor_radius) const;
 
   /**
    * @brief draw cursor for color circle
@@ -279,7 +299,7 @@ protected:
                          ColorSVRectangleGeometry rect, uint h) const;
 
   void draw_color_svrect_cursor(LCD_ST7735SBuffered &LCD,
-                                ColorSVRectangleCursorGeometry cursor) const;
+                                ColorSVCursorGeometry cursor) const;
 
 public:
   ColorSelectorDrawer(LCD_ST7735SBuffered &lcd);
@@ -293,6 +313,7 @@ public:
    * @param[in] params: parameters of cursor
    */
   void set_cursor_params(ColorCursorParams params);
+  void set_sv_cursor_params(ColorSVCursorParams params);
   /**
    * @brief set background color
    * @param[in] bg_color: background color
