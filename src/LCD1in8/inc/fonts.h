@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
   * @file    fonts.h
-  * @author  MCD Application Team
+  * @author  MCD Application Team (Modified by lum1narie)
   * @version V1.0.0
-  * @date    18-February-2014
-  * @brief   Header for fonts.c file
+  * @date    18-February-2014 (Original date)
+  * @brief   Header file for fonts.c
   ******************************************************************************
   * @attention
   *
@@ -39,9 +39,11 @@
 #ifndef __FONTS_H
 #define __FONTS_H
 
-/* Max size of bitmap will based on a font24 (17x24) */
+/** @brief Maximum height of a character bitmap in any included font (pixels). */
 #define MAX_HEIGHT_FONT         24
+/** @brief Maximum width of a character bitmap in any included font (pixels). */
 #define MAX_WIDTH_FONT          17
+/** @brief Offset in the font bitmap file header (if applicable, seems unused here). */
 #define OFFSET_BITMAP           54
 
 #ifdef __cplusplus
@@ -51,25 +53,37 @@
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 
+/**
+ * @brief Structure definition for a font.
+ *        Contains information about the font's bitmap data and dimensions.
+ */
 typedef struct _tFont
-{    
+{
+  /** @brief Pointer to the font's bitmap data table (usually an array of bytes). */
   const uint8_t *table;
+  /** @brief Width of one character in the font (pixels). Assumes fixed width for simplicity in some uses. */
   uint16_t Width;
+  /** @brief Height of one character in the font (pixels). */
   uint16_t Height;
-  
+
 } sFONT;
 
+/** @brief External declaration for the 24-pixel height font. */
 extern sFONT Font24;
+/** @brief External declaration for the 20-pixel height font. */
 extern sFONT Font20;
+/** @brief External declaration for the 16-pixel height font. */
 extern sFONT Font16;
+/** @brief External declaration for the 12-pixel height font. */
 extern sFONT Font12;
+/** @brief External declaration for the 8-pixel height font. */
 extern sFONT Font8;
 
 #ifdef __cplusplus
 }
 #endif
-  
+
 #endif /* __FONTS_H */
- 
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
